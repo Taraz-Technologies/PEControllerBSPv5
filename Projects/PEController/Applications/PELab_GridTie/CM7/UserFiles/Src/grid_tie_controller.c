@@ -105,14 +105,15 @@ void GridTieControl_Init(grid_tie_t* gridTie, PWMResetCallback pwmResetCallback)
 {
 	/***************** Configure Inverter *********************/
 	inverter3Ph_config_t* inverterConfig = &gridTie->inverterConfig;
-	inverterConfig->legType = LEG_DEFAULT;
-	inverterConfig->pwmConfig.lim.min = 0;
-	inverterConfig->pwmConfig.lim.max = 1;
-	inverterConfig->pwmConfig.lim.minMaxDutyCycleBalancing = MIN_MAX_BALANCING_INVERTER;
-	inverterConfig->pwmConfig.dutyMode = INVERTER_DUTY_MODE;
-	inverterConfig->pwmConfig.slaveOpts = &timerTriggerIn;
-	inverterConfig->pwmConfig.masterOpts = &timerTriggerOut;
-	inverterConfig->pwmConfig.module = &inverterPWMModuleConfig;
+	pm_config_t* pmConfig = &inverterConfig->pmConfig;
+	pmConfig->legType = LEG_DEFAULT;
+	pmConfig->pwmConfig.lim.min = 0;
+	pmConfig->pwmConfig.lim.max = 1;
+	pmConfig->pwmConfig.lim.minMaxDutyCycleBalancing = MIN_MAX_BALANCING_INVERTER;
+	pmConfig->pwmConfig.dutyMode = INVERTER_DUTY_MODE;
+	pmConfig->pwmConfig.slaveOpts = &timerTriggerIn;
+	pmConfig->pwmConfig.masterOpts = &timerTriggerOut;
+	pmConfig->pwmConfig.module = &inverterPWMModuleConfig;
 	Inverter3Ph_Init(inverterConfig);
 
 	// configure PLL

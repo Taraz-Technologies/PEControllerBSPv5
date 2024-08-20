@@ -81,18 +81,19 @@ void OpenLoopVfControl_Init(openloopvf_config_t* config, PWMResetCallback pwmRes
 {
 	/***************** Configure Inverter *********************/
 	inverter3Ph_config_t* inverterConfig = &config->inverterConfig;
+	pm_config_t* pmConfig = &inverterConfig->pmConfig;
 #if PECONTROLLER_CONFIG == PLB_TNPC
-	inverterConfig->legType = LEG_TNPC;
+	pmConfig->legType = LEG_TNPC;
 #else
-	inverterConfig->legType = LEG_DEFAULT;
+	pmConfig->legType = LEG_DEFAULT;
 #endif
-	inverterConfig->pwmConfig.lim.min = 0;
-	inverterConfig->pwmConfig.lim.max = 1;
-	inverterConfig->pwmConfig.lim.minMaxDutyCycleBalancing = MIN_MAX_BALANCING_INVERTER;
-	inverterConfig->pwmConfig.dutyMode = INVERTER_DUTY_MODE;
-	inverterConfig->pwmConfig.slaveOpts = &timerTriggerIn;
-	inverterConfig->pwmConfig.masterOpts = &timerTriggerOut;
-	inverterConfig->pwmConfig.module = &inverterPWMModuleConfig;
+	pmConfig->pwmConfig.lim.min = 0;
+	pmConfig->pwmConfig.lim.max = 1;
+	pmConfig->pwmConfig.lim.minMaxDutyCycleBalancing = MIN_MAX_BALANCING_INVERTER;
+	pmConfig->pwmConfig.dutyMode = INVERTER_DUTY_MODE;
+	pmConfig->pwmConfig.slaveOpts = &timerTriggerIn;
+	pmConfig->pwmConfig.masterOpts = &timerTriggerOut;
+	pmConfig->pwmConfig.module = &inverterPWMModuleConfig;
 	Inverter3Ph_Init(inverterConfig);
 	/***************** Configure Inverter *********************/
 
@@ -111,14 +112,14 @@ void OpenLoopVfControl_Init(openloopvf_config_t* config, PWMResetCallback pwmRes
 static bool EnableDisableInverter_IfRequired(openloopvf_config_t* config, float a)
 {
 	// if inverter state change request in process
-	if (config->requestedState != config->inverterConfig.state)
+	if (config->requestedState != config->inverterConfig.pmConfig.state)
 	{
 		float f = config->currentFreq - a;
 		// if frequency negligible update state
 		if (f <= 0)
 		{
 			config->currentFreq = 0;
-			Inverter3Ph_Activate(&config->inverterConfig, config->requestedState == INVERTER_INACTIVE ? false : true);
+			Inverter3Ph_Activate(&config->inverterConfig, config->requestedState == POWER_MODULE_INACTIVE ? false : true);
 		}
 		else
 			config->currentFreq = f;
@@ -172,10 +173,10 @@ void OpenLoopVfControl_Loop(openloopvf_config_t* config)
 
 	EnableDisableInverter_IfRequired(config, a);
 
-	if (config->inverterConfig.state == INVERTER_INACTIVE)
+	if (config->inverterConfig.pmConfig.state == POWER_MODULE_INACTIVE)
 		return;
 
-	if (config->requestedState == config->inverterConfig.state)
+	if (config->requestedState == config->inverterConfig.pmConfig.state)
 	{
 		if(ChangeInverterDirection_IfRequired(config, a) == false)
 			UpdateCurrentFrequency(config, a);
