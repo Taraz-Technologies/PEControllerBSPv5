@@ -34,7 +34,11 @@
 /********************************************************************************
  * Structures
  *******************************************************************************/
-
+typedef struct
+{
+	uint32_t t0;
+	uint32_t tOn;
+} phase_shift_config_t;
 /********************************************************************************
  * Static Variables
  *******************************************************************************/
@@ -50,6 +54,17 @@
 /********************************************************************************
  * Code
  *******************************************************************************/
+float BSP_PWM1_10_UpdatePhaseShift(uint32_t pwmNo, float psRatio)
+{
+	HRTIM_Timerx_TypeDef* tmr = &hhrtim.Instance->sTimerxRegs[(pwmNo - 1) / 2];
+
+	uint32_t tOn = tmr->CMP2xR - tmr->CMP1xR;
+	uint32_t t0 = 3 + psRatio * tmr->PERxR;
+	tmr->CMP1xR = t0;
+	tmr->CMP2xR = t0 + tOn;
+
+	return psRatio;
+}
 /**
  * @brief Update the Duty Cycle of an Inverted Pair
  * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-10). <br>

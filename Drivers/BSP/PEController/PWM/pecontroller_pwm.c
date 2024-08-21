@@ -123,6 +123,13 @@ float BSP_PWM_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
 	return 0;
 }
 
+float BSP_PWM_UpdatePhaseShift(uint32_t pwmNo, float psRatio)
+{
+	if (pwmNo <= 10)
+		return BSP_PWM1_10_UpdatePhaseShift(pwmNo, psRatio);
+	return 0;
+}
+
 /**
  * @brief Update the Duty Cycle of a channel
  * @param pwmNo PWM channel to be configured (Valid Values 1-16)
