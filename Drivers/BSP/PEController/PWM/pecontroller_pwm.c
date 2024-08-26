@@ -24,6 +24,7 @@
  *******************************************************************************/
 #include "pecontroller_pwm1_10.c"
 #include "pecontroller_pwm11_16.c"
+#include "Pecontroller_pwm17_22.c"
 #include "pecontroller_pwm.h"
 /********************************************************************************
  * Defines
@@ -54,7 +55,7 @@
  *******************************************************************************/
 /**
  * @brief Activates a specific PWM Inverted pair
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-22). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
@@ -64,12 +65,13 @@ void BSP_PWM_ActivateInvertedPair(uint32_t pwmNo, bool en)
 {
 	if (pwmNo <= 10)
 		PWM1_10_ActivateInvertedPair(pwmNo, en);
-	else if (pwmNo <= 16)
+	else if (pwmNo <= 22)
 		BSP_PWMOut_Enable(((1U) << (pwmNo - 1)), en);
 }
+
 /**
  * @brief Configures an PWM pair as inverted pair
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-22). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
@@ -78,34 +80,82 @@ void BSP_PWM_ActivateInvertedPair(uint32_t pwmNo, bool en)
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config)
+void BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config)
 {
 	if (pwmNo <= 10)
-		return BSP_PWM1_10_ConfigInvertedPairs(pwmNo, config, 1);
+		PWM1_10_ConfigInvertedPair(pwmNo, config);
 	else if (pwmNo <= 16)
-		return BSP_PWM11_16_ConfigInvertedPairs(pwmNo, config, 1);
-	return NULL;
+		PWM11_16_ConfigInvertedPair(pwmNo, config);
+	else if (pwmNo <=22)
+		PWM17_22_ConfigInvertedPair(pwmNo, config);
 }
+
 /**
- * @brief Configures a PWM channel
- * @param pwmNo PWM channel to be configured (Valid Values 1-16)
- * @param *config Pointer to a  pwm_config_t structure that contains the configuration
+ * @brief Configures consecutive PWM pairs as inverted pairs
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-22). <br>
+ * 				<b>Pairs are classified as :</b>
+ * 				-# CH1 = Reference channel available at pin pwmNo
+ * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
+ * @param config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM pair
+ * @param pairCount Number of pairs needs to configured as inverted. <br>
+ *					<b> Values for the pairCount are as follows :<b>
+ *					-# PWM 1-10: Valid values(1-5)
+ *					-# PWM 11-16: Valid Values (1-3)  
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config)
+DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPairs(uint16_t pwmNo, pwm_config_t *config, uint16_t pairCount)
 {
 	if (pwmNo <= 10)
-		return BSP_PWM1_10_ConfigChannels(pwmNo, config, 1);
+		return BSP_PWM1_10_ConfigInvertedPairs(pwmNo, config, pairCount);
 	else if (pwmNo <= 16)
-		return BSP_PWM11_16_ConfigChannels(pwmNo, config, 1);
+		return BSP_PWM11_16_ConfigInvertedPairs(pwmNo, config, pairCount);
+	else if(pwmNo <=22)
+		return BSP_PWM17_22_ConfigInvertedPairs(pwmNo, config, pairCount);
+	return NULL;
+}
+
+/**
+ * @brief Configures a PWM channel
+ * @param pwmNo PWM channel to be configured (Valid Values 1-22)
+ * @param *config Pointer to a  pwm_config_t structure that contains the configuration
+ * 				   parameters for the PWM pair
+ * @return void 
+ */
+void BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config)
+{
+	if (pwmNo <= 10)
+		PWM1_10_ConfigChannel(pwmNo, config);
+	else if (pwmNo <= 16)
+		PWM11_16_ConfigChannel(pwmNo, config);
+	else if (pwmNo <= 22)
+		PWM17_22_ConfigChannel(pwmNo, config);
+}
+
+/**
+ * @brief Configures consecutive PWM channels
+ * @param pwmNo PWM channel to be configured (Valid Values 1-22)
+ * @param *config Pointer to a  pwm_config_t structure that contains the configuration
+ * 				   parameters for the PWM pair
+ * @param channelCount Define number of the channels to be configured.
+ * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
+ * 						  whenever the duty cycles of the pair need to be updated
+ */
+DutyCycleUpdateFnc BSP_PWM_ConfigChannels(uint16_t pwmNo, pwm_config_t *config, uint16_t channelCount)
+{
+	if (pwmNo <= 10)
+		return BSP_PWM1_10_ConfigChannels(pwmNo, config, channelCount);
+	else if (pwmNo <= 16)
+		return BSP_PWM11_16_ConfigChannels(pwmNo, config, channelCount);
+	else if (pwmNo <= 22)
+		return BSP_PWM17_22_ConfigChannels(pwmNo, config, channelCount);
 	return NULL;
 }
 
 /**
  * @brief Update the Duty Cycle of an Inverted Pair
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-22). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
@@ -120,12 +170,14 @@ float BSP_PWM_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
 		return BSP_PWM1_10_UpdatePairDuty(pwmNo, duty, config);
 	else if (pwmNo <= 16)
 		return BSP_PWM11_16_UpdatePairDuty(pwmNo, duty, config);
+	else if (pwmNo <= 22)
+		return BSP_PWM17_22_UpdatePairDuty(pwmNo, duty, config);
 	return 0;
 }
 
 /**
  * @brief Update the Duty Cycle of a channel
- * @param pwmNo PWM channel to be configured (Valid Values 1-16)
+ * @param pwmNo PWM channel to be configured (Valid Values 1-22)
  * @param duty duty cycle to be applied to the channel (Range 0-1 or given in the config parameter)
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM channel
@@ -137,12 +189,14 @@ float BSP_PWM_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t* config
 		return BSP_PWM1_10_UpdateChannelDuty(pwmNo, duty, config);
 	else if (pwmNo <= 16)
 		return BSP_PWM11_16_UpdateChannelDuty(pwmNo, duty, config);
+	else if (pwmNo <= 22)
+		return BSP_PWM17_22_UpdateChannelDuty(pwmNo, duty, config);
 	return 0;
 }
 
 /**
  * @brief Enable / Disable interrupt for a PWM channel as per requirement
- * @param pwmNo Channel no of the PWM Channel (Range 1-16)
+ * @param pwmNo Channel no of the PWM Channel (Range 1-22)
  * @param enable If enable interrupt set this parameter to <c>true</c>
  * @param callback Specifies the function to be called when the PWM is reset
  * @param priority Interrupt priority. Range (0-15). Here 0 is the highest priority
@@ -153,6 +207,9 @@ void BSP_PWM_Config_Interrupt(uint32_t pwmNo, bool enable, PWMResetCallback call
 		BSP_PWM1_10_Config_Interrupt(pwmNo, enable, callback, priority);
 	else if (pwmNo <= 16)
 		BSP_PWM11_16_Config_Interrupt(enable, callback, priority);
+	else if (pwmNo <= 22)
+		BSP_PWM17_22_Config_Interrupt(enable, callback, priority);
+
 }
 /**
  * @brief  Enables or disables the TIM Capture Compare Channel xN.
@@ -204,19 +261,27 @@ void BSP_PWM_Start(uint32_t pwmMask, bool masterHRTIM)
 			(masterHRTIM ? HRTIM_TIMERID_MASTER : 0);
 
 	// enable timer
-	if ((pwmMask & 0xfc00) && (pwmMask & 0x2ff))
+	if ((pwmMask & 0xfc00) && (pwmMask & 0x3ff) && (pwmMask & 0x3f0000))
 	{
 		__HAL_TIM_MOE_ENABLE(&htim1);
+		__HAL_TIM_MOE_ENABLE(&htim8);
 		hhrtim.Instance->sMasterRegs.MCR |= (th_tim_sel);
 		__HAL_TIM_ENABLE(&htim1);
+		__HAL_TIM_ENABLE(&htim8);
 	}
 	else if (pwmMask & 0xfc00)
 	{
 		__HAL_TIM_MOE_ENABLE(&htim1);
 		__HAL_TIM_ENABLE(&htim1);
 	}
-	else if (pwmMask & 0x2ff)
+	else if (pwmMask & 0x3ff)
 		hhrtim.Instance->sMasterRegs.MCR |= (th_tim_sel);
+
+	else if (pwmMask & 0x3f0000)
+	{
+		__HAL_TIM_MOE_ENABLE(&htim8);
+		__HAL_TIM_ENABLE(&htim8);
+	}
 
 }
 /**
@@ -226,11 +291,11 @@ void BSP_PWM_Start(uint32_t pwmMask, bool masterHRTIM)
  * BSP_PWM_Stop(0x1, false);
  * // Stop PWM for channel 1 and channel 2
  * BSP_PWM_Stop(0x3, false);
- * // Stop PWM for channel n and channel m, where n & m are between 1 & 16
+ * // Stop PWM for channel n and channel m, where n & m are between 1 & 22
  * BSP_PWM_Stop((1U << (n - 1)) | (1U << (m - 1)), bool);
  * @endcode
  * @param pwmMask Set the PWM channels needed to be stopped.<br>
- * 				<b>Valid Range</b> =  (0x0001 - 0xffff)
+ * 				<b>Valid Range</b> =  (0x0001 - 0x3fffff)
  * @param masterHRTIM <c>true</c> if masterHRTIM to be disabled synchronously else <c>false</c>
  */
 void BSP_PWM_Stop(uint32_t pwmMask, bool masterHRTIM)
@@ -248,6 +313,19 @@ void BSP_PWM_Stop(uint32_t pwmMask, bool masterHRTIM)
 	if (pwmMask & 0x8000)
 		TIM_CCxNChannelCmd(htim1.Instance, TIM_CHANNEL_3, TIM_CCxN_DISABLE);
 
+	if (pwmMask & 0x10000)
+		TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);
+	if (pwmMask & 0x20000)
+		TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCxN_DISABLE);
+	if (pwmMask & 0x40000)
+		TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE);
+	if (pwmMask & 0x80000)
+		TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCxN_DISABLE);
+	if (pwmMask & 0x100000)
+		TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCx_DISABLE);
+	if (pwmMask & 0x400000)
+		TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCxN_DISABLE);
+
 	HAL_HRTIM_WaveformOutputStop(&hhrtim,
 			(pwmMask & 0x1 ? HRTIM_OUTPUT_TA1 : 0) |
 			(pwmMask & 0x2 ? HRTIM_OUTPUT_TA2 : 0) |
@@ -260,12 +338,17 @@ void BSP_PWM_Stop(uint32_t pwmMask, bool masterHRTIM)
 			(pwmMask & 0x100 ? HRTIM_OUTPUT_TE1 : 0) |
 			(pwmMask & 0x200 ? HRTIM_OUTPUT_TE2 : 0));
 
+	if (pwmMask & 0x3f0000)
+	{
+		__HAL_TIM_MOE_DISABLE(&htim8);
+		__HAL_TIM_DISABLE(&htim8);
+	}
 	if (pwmMask & 0xfc00)
 	{
 		__HAL_TIM_MOE_DISABLE(&htim1);
 		__HAL_TIM_DISABLE(&htim1);
 	}
-	else if (pwmMask & 0x2ff)
+	else if (pwmMask & 0x3ff)
 	{
 		hhrtim.Instance->sMasterRegs.MCR &= ~
 				((pwmMask & 0x3 ? HRTIM_TIMERID_TIMER_A : 0) |
@@ -323,17 +406,33 @@ void BSP_PWM_GetDefaultConfig(pwm_config_t* pwmConfig, pwm_module_config_t* modu
  * BSP_PWMOut_Enable(0x1, true);
  * // Enable PWM output for channel 1 and channel 2
  * BSP_PWMOut_Enable(0x3, true);
- * // Disable PWM output for channel n and channel m, where n & m are between 1 & 16
+ * // Disable PWM output for channel n and channel m, where n & m are between 1 & 22
  * BSP_PWMOut_Enable((1U << (n - 1)) | (1U << (m - 1)), false);
  * @endcode
  * @param pwmMask Set the PWM channels needed to be run.<br>
- * 				<b>Valid Range</b> =  (0x0001 - 0xffff)
+ * 				<b>Valid Range</b> =  (0x0001 - 0x3fffff)
  * @param en <c>true</c> if needs to be enabled else <c>false</c>
  */
 void BSP_PWMOut_Enable(uint32_t pwmMask, bool en)
 {
 	if (en)
 	{
+		if (pwmMask & 0x30000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCxN_ENABLE);
+			}
+		if (pwmMask & 0xC0000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCxN_ENABLE);
+			}
+		if (pwmMask & 0x300000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCx_ENABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCxN_ENABLE);
+			}
+
 		if (pwmMask & 0xC00)
 		{
 			TIM_CCxChannelCmd(htim1.Instance, TIM_CHANNEL_1, TIM_CCx_ENABLE);
@@ -364,6 +463,22 @@ void BSP_PWMOut_Enable(uint32_t pwmMask, bool en)
 	}
 	else
 	{
+		if (pwmMask & 0x30000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_1, TIM_CCxN_DISABLE);
+			}
+		if (pwmMask & 0xC0000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCx_DISABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_2, TIM_CCxN_DISABLE);
+			}
+		if (pwmMask & 0x300000)
+			{
+				TIM_CCxChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCx_DISABLE);
+				TIM_CCxNChannelCmd(htim8.Instance, TIM_CHANNEL_3, TIM_CCxN_DISABLE);
+			}
+
 		if (pwmMask & 0xC00)
 		{
 			TIM_CCxChannelCmd(htim1.Instance, TIM_CHANNEL_1, TIM_CCx_DISABLE);

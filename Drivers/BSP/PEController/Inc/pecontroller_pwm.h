@@ -121,7 +121,23 @@ typedef struct
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config);
+extern void BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config);
+/**
+ * @brief Configures an PWM pair as inverted pair
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>
+ * 				<b>Pairs are classified as :</b>
+ * 				-# CH1 = Reference channel available at pin pwmNo
+ * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
+ * @param config Pointer to a  pwm_config_t structure that contains the configuration
+ * 				   parameters for the PWM pair
+ * @param pairCount Number of pairs needs to configured as inverted. <br>
+ *					<b> Values for the pairCount are as follows :<b>
+ *					-# PWM 1-10: Valid values(1-5)
+ *					-# PWM 11-16: Valid Values (1-3)  
+ * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
+ * 						  whenever the duty cycles of the pair need to be updated
+ */
+extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPairs(uint16_t pwmNo, pwm_config_t *config, uint16_t pairCount);
 /**
  * @brief Configures a PWM channel
  * @param pwmNo PWM channel to be configured (Valid Values 1-16)
@@ -130,7 +146,18 @@ extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-extern DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config);
+ extern void BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config);
+
+/**
+ * @brief Configures consecutive PWM channels
+ * @param pwmNo PWM channel to be configured (Valid Values 1-16)
+ * @param *config Pointer to a  pwm_config_t structure that contains the configuration
+ * 				   parameters for the PWM pair
+ * @param channelCount Define number of the channels to be configured.
+ * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
+ * 						  whenever the duty cycles of the pair need to be updated
+ */
+extern DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config, uint16_t channelCount);
 
 /**
  * @brief Update the Duty Cycle of an Inverted Pair
