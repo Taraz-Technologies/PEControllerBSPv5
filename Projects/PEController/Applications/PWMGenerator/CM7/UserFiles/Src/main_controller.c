@@ -86,7 +86,7 @@ psfb_config_t psfbConfig =
 				.legType = LEG_DEFAULT,
 				.pwmConfig =
 				{
-					.dutyMode = OUTPUT_DUTY_MINUS_DEADTIME_AT_PWMH,
+					.dutyMode = OUTPUT_DUTY_AT_PWMH,
 					.lim = { .min = 0, .max = 1, .minMaxDutyCycleBalancing = false },
 					.module = &psfbPWMModuleConfig,
 					.slaveOpts = NULL
