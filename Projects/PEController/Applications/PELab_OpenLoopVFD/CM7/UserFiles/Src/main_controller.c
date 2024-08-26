@@ -66,11 +66,11 @@ static void ProcessInverterActivation(state_update_request* request, int regID, 
 			INTER_CORE_DATA.bools[regID] = request->state;
 			request->err = ERR_OK;
 		}
-		else if (config->requestedState != config->inverterConfig.state)
+		else if (config->requestedState != config->inverterConfig.pmConfig.state)
 			request->err = ERR_INVERTER_SHUTDOWN;
 		else
 		{
-			config->requestedState = request->state ? INVERTER_ACTIVE : INVERTER_INACTIVE;
+			config->requestedState = request->state ? POWER_MODULE_ACTIVE : POWER_MODULE_INACTIVE;
 			INTER_CORE_DATA.bools[regID] = request->state;
 			request->err = ERR_OK;
 		}
@@ -90,9 +90,9 @@ static void ADC_Callback(adc_measures_t* result)
 			);
 
 	// Switch between Monitoring and control mode
-	if (openLoopVfConfig1.inverterConfig.state == INVERTER_ACTIVE
+	if (openLoopVfConfig1.inverterConfig.pmConfig.state == POWER_MODULE_ACTIVE
 #if VFD_COUNT == 2
-			|| openLoopVfConfig2.inverterConfig.state == INVERTER_ACTIVE
+			|| openLoopVfConfig2.inverterConfig.pmConfig.state == POWER_MODULE_ACTIVE
 #endif
 	)
 	{

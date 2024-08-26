@@ -51,6 +51,44 @@
  * Code
  *******************************************************************************/
 /**
+ * @brief Update the Phase shift of the Inverted PWM Pair. Used to control the start point of the PWM signal.
+ * @warning Make sure that the Phase Shift is within range otherwise it will be auto updated to satisfy the following formula.
+ * <c>psDiv360 (Max) = (Period - 4 - onTime) / period</c>
+ * Here
+ * -# Period: Period of the timer in clock cycles.
+ * -# onTime: On time of the wave in clock cycles set up before calling this function.
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-10). <br>
+ * 				<b>Pairs are classified as :</b>
+ * 				-# CH1 = Reference channel available at pin pwmNo
+ * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
+ * @param psDiv360 Phase Shift in degrees divided by 360. The value should be between 0-1.
+ * @return Applied Phase Shift.
+ */
+float BSP_PWM1_10_UpdatePhaseShift(uint32_t pwmNo, float psDiv360)
+{
+	HRTIM_Timerx_TypeDef* tmr = &hhrtim.Instance->sTimerxRegs[(pwmNo - 1) / 2];
+
+	uint32_t p = tmr->PERxR;
+	uint32_t tOn = tmr->CMP2xR - tmr->CMP1xR;
+	uint32_t t0 = 3 + psDiv360 * p;
+	uint32_t tEnd = t0 + tOn;
+
+	// Waveform should terminate in this cycle.
+	// The drivers don't support crossing over of the wave from one cycle to the other cycle
+	// This will adjust the phase shift to prvent crossing over but will keep the duty cycle as the same.
+	if (tEnd >= p)
+	{
+		tEnd = p - 1;
+		t0 = tEnd - tOn;
+		psDiv360 = (t0 - 3.0f) / p;
+	}
+
+	tmr->CMP1xR = t0;
+	tmr->CMP2xR = tEnd;
+
+	return psDiv360;
+}
+/**
  * @brief Update the Duty Cycle of an Inverted Pair
  * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-10). <br>
  * 				<b>Pairs are classified as :</b>
