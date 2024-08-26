@@ -26,6 +26,18 @@
 extern "C" {
 #endif
 
+/** @addtogroup Control_Library
+ * @{
+ */
+
+/** @defgroup PSFB Phase-Shifted Full-Bridge
+ * @brief Contains the declaration and procedures relating to a Phase-Shifted Full-Bridge.
+ * @details List of functions
+ * 	-# <b>@ref PSFB_Init() :</b> Configures the Phase-Shifted Full-Bridge.
+ * 	-# <b>@ref PSFB_UpdateDuty() :</b> Updates the Duty Cycle of the Phase-Shifted Full-Bridge.
+ * 	-# <b>@ref PSFB_Activate() :</b> Activate/Deactivate the Phase-Shifted Full-Bridge.
+ * @{
+ */
 /********************************************************************************
  * Includes
  *******************************************************************************/
@@ -33,13 +45,17 @@ extern "C" {
 /********************************************************************************
  * Defines
  *******************************************************************************/
-/**
- *
- */
 
 /********************************************************************************
  * Typedefs
  *******************************************************************************/
+
+/********************************************************************************
+ * Structures
+ *******************************************************************************/
+/** @defgroup PSFB_Exported_Structs Structures
+  * @{
+  */
 /**
  * @brief Defines the Phase-Shifted Full Bridge's parameters.
  */
@@ -48,10 +64,9 @@ typedef struct
 	pm_config_t pmConfig;		/**< @brief Module configuration for the PSFB. */
 	uint16_t s1PinNos[2];		/**< @brief Pin numbers for the first pin of each leg. S1 and S3 pins for the bridge. */
 } psfb_config_t;
-/********************************************************************************
- * Structures
- *******************************************************************************/
-
+/**
+ * @}
+ */
 /********************************************************************************
  * Exported Variables
  *******************************************************************************/
@@ -59,7 +74,9 @@ typedef struct
 /********************************************************************************
  * Global Function Prototypes
  *******************************************************************************/
-
+/** @defgroup PSFB_Exported_Functions Functions
+  * @{
+  */
 /********************************************************************************
  * Code
  *******************************************************************************/
@@ -87,6 +104,14 @@ extern void PSFB_Activate(psfb_config_t* config, bool en);
 #ifdef __cplusplus
 }
 #endif
-
+/**
+ * @}
+ */
+/**
+ * @}
+ */
+/**
+ * @}
+ */
 #endif 
 /* EOF */

@@ -30,7 +30,7 @@ extern "C" {
  */
 
 /** @defgroup PowerModule Power Module
- * @brief Contains the declaration and procedures relating to a three phase inverter.
+ * @brief Contains the declaration and procedures relating to a generic Power Module.
  * @details List of functions
  * 	-# <b>@ref PM_ConfigLeg() :</b> Configures a power module leg.
  * 	-# <b>@ref PM_EnableLeg() :</b> Enables a power module leg.
