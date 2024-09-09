@@ -122,7 +122,7 @@ extern float BSP_PWM_UpdatePhaseShift(uint32_t pwmNo, float psRatio);
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-extern void BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config);
+extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *config);
 /**
  * @brief Configures an PWM pair as inverted pair
  * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>

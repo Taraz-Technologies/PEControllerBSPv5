@@ -110,7 +110,7 @@ typedef struct
  */
 typedef struct
 {
-	pwm_alignment_t alignment;		/**< @brief Specifies the alignment of PWM */
+	pwm_alignment_t alignment;		/**< @brief Specifies the alignment of PWM, only Edge aligned mode is available for TIM16*/
 	timer_frequency_t f;			/**< @brief Specifies the frequency of the PWM in Hz (Minimum possible value is 5KHz) */
 	deadtime_t deadtime;			/**< @brief The dead time parameter for the paired inverted PWM.
 										For individual PWMs this value should be NULL */
