@@ -102,6 +102,21 @@ extern DutyCycleUpdateFnc BSP_PWM1_10_ConfigInvertedPairs(uint32_t pwmNo, pwm_co
  */
 extern float BSP_PWM1_10_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* config);
 /**
+ * @brief Update the Phase shift of the Inverted PWM Pair. Used to control the start point of the PWM signal.
+ * @warning Make sure that the Phase Shift is within range otherwise it will be auto updated to satisfy the following formula.
+ * <c>psDiv360 (Max) = (Period - 4 - onTime) / period</c>
+ * Here
+ * -# Period: Period of the timer in clock cycles.
+ * -# onTime: On time of the wave in clock cycles set up before calling this function.
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-10). <br>
+ * 				<b>Pairs are classified as :</b>
+ * 				-# CH1 = Reference channel available at pin pwmNo
+ * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
+ * @param psDiv360 Phase Shift in degrees divided by 360. The value should be between 0-1.
+ * @return Applied Phase Shift.
+ */
+extern float BSP_PWM1_10_UpdatePhaseShift(uint32_t pwmNo, float psDiv360);
+/**
  * @brief Configures consecutive PWM channels
  * @param pwmNo Channel no of the first PWM Channel in the pair (Valid Values 1-10)
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration

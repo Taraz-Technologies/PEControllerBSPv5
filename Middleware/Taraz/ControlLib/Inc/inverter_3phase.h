@@ -45,6 +45,7 @@ extern "C" {
 #include "general_header.h"
 #include "pecontroller_pwm.h"
 #include "pecontroller_digital_out.h"
+#include "power_module.h"
 /*******************************************************************************
  * Defines
  ******************************************************************************/
@@ -52,29 +53,7 @@ extern "C" {
 /*******************************************************************************
  * Enums
  ******************************************************************************/
-/** @defgroup INVERTER_3PH_Exported_Typedefs Type Definitions
-  * @{
-  */
-/**
- * @brief Inverter Active / Inactive state
- */
-typedef enum
-{
-	INVERTER_INACTIVE,            /**< The inverter state is inactive */
-	INVERTER_ACTIVE,              /**< The inverter state is active */
-} inverter_state_t;
-/**
- * @brief Definitions of Switch Legs
- */
-typedef enum
-{
-	LEG_DEFAULT,            /**< Define the leg as a default leg */
-	LEG_TNPC,               /**< Define the leg as a TNPC leg */
-	LEG_RESERVED,			/**< Final Value Not Used */
-} switch_leg_t;
-/**
- * @}
- */
+
 /*******************************************************************************
  * Structures
  ******************************************************************************/
@@ -86,7 +65,7 @@ typedef enum
  */
 typedef struct
 {
-	inverter_state_t state;						/**< @brief The inverter state whether active or inactive */
+	pm_config_t pmConfig;						/**< @brief Power module configuration */
 	uint16_t s1PinNos[3];						/**< @brief Collection of the Pin numbers of the first PWM switch
 													in a leg of the 3-Phase System. The remaining PWMs are the
 													consecutive pins after this pin */
@@ -94,8 +73,6 @@ typedef struct
 	 	 	 	 	 	 	 	 	 	 	 	 	 the remaining disable pins should be consecutively after this pin */
 	uint16_t dsblPinCount;						/**< @brief No of disable pins used by the system.
 													These pins will be used to disable the relevant gate drivers */
-	switch_leg_t legType;						/**< @brief Type of switch legs used for switching the inverter */
-	pwm_config_t pwmConfig;						/**< @brief The PWM configurations */
 	DutyCycleUpdateFnc updateCallbacks[3];		/**< @brief These call backs are used by the drivers to update
 													the duty cycles of all switches according to the configuration */
 	uint16_t s1PinDuplicate;					/**< @brief The inverter can have an optional 4th leg which will get the same signals of 3rd leg.

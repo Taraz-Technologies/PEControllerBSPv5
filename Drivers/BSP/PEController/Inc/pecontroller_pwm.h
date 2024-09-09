@@ -110,6 +110,7 @@ typedef struct
 /** @addtogroup PWM_Exported_Functions
   * @{
   */
+extern float BSP_PWM_UpdatePhaseShift(uint32_t pwmNo, float psRatio);
 /**
  * @brief Configures an PWM pair as inverted pair
  * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 1-16). <br>

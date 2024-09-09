@@ -20,6 +20,7 @@
 #include "shared_memory.h"
 #include "pecontroller_timers.h"
 #include "p2p_comms.h"
+#include "phase_shifted_full_bridge.h"
 /*******************************************************************************
  * Defines
  ******************************************************************************/
@@ -71,6 +72,27 @@ hrtim_opts_t opts =
 		.f = 10000,
 		.syncSrc = TIM_TRG_SRC_NONE,
 };
+pwm_module_config_t psfbPWMModuleConfig =
+{
+		.alignment = EDGE_ALIGNED,
+		.f = 10000,
+		.deadtime = {.on = true, .nanoSec = 1000 }
+};
+psfb_config_t psfbConfig =
+{
+		.s1PinNos = {3, 5},
+		.pmConfig =
+		{
+				.legType = LEG_DEFAULT,
+				.pwmConfig =
+				{
+					.dutyMode = OUTPUT_DUTY_AT_PWMH,
+					.lim = { .min = 0, .max = 1, .minMaxDutyCycleBalancing = false },
+					.module = &psfbPWMModuleConfig,
+					.slaveOpts = NULL
+				},
+		}
+};
 /*******************************************************************************
  * Code
  ******************************************************************************/
@@ -107,6 +129,7 @@ void MainControl_Init(void)
 	/** Creates a PWM sequence for the H-Bridges where switches 3, 6 get the same signal
 	 * whereas switches 4,5 get the inverted signal. The phase shift for the H-Bridge is controlled
 	 * via the value of compare 2 unit of master HRTIM */
+#if 0
 	timerTriggerIn.src = TIM_TRG_SRC_HRTIM_MASTER_CMP2;
 	updateFnc = BSP_PWM_ConfigInvertedPair(3, &pwm);
 	updateFnc(3, .5f, &pwm);
@@ -117,6 +140,10 @@ void MainControl_Init(void)
 	updateFnc(6, .5f, &pwm);
 	BSP_Dout_SetAsPWMPin(5);
 	BSP_Dout_SetAsPWMPin(6);
+#endif
+	PSFB_Init(&psfbConfig);
+	PSFB_Activate(&psfbConfig, true);
+	PSFB_UpdateDuty(&psfbConfig, 0.25f);
 	/****** 2 Inverted Pairs Operating as a HBridge synched to CMP2 of Master HRTIM  *******/
 
 	/********************* Inverted Pair synched to FiberTx TIM3 ************************/
@@ -214,6 +241,7 @@ static void MainControl_Loop(void)
 	// The register SHARE_PWM_PHASE_SHIFT can be controlled from the screen.
 	// The phase shift should be between 0 and 180 degrees
 	BSP_MasterHRTIM_SetShiftPercent(&opts, HRTIM_COMP2, INTER_CORE_DATA.floats[P2P_PWM_PHASE_SHIFT] / 360.f);
+	PSFB_UpdateDuty(&psfbConfig, INTER_CORE_DATA.floats[P2P_PWM_PHASE_SHIFT] / 180.f);
 }
 
 /* EOF */
