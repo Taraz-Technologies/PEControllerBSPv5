@@ -66,7 +66,7 @@ void BSP_PWM_ActivateInvertedPair(uint32_t pwmNo, bool en)
 {
 	if (pwmNo <= 10)
 		PWM1_10_ActivateInvertedPair(pwmNo, en);
-	else if (pwmNo <= 22)
+	else if (pwmNo <= 24)
 		BSP_PWMOut_Enable(((1U) << (pwmNo - 1)), en);
 }
 
@@ -91,6 +91,7 @@ DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *conf
 		return BSP_PWM17_22_ConfigInvertedPairs(pwmNo, config,1);
 	else if(pwmNo <=24)
 		return BSP_PWM23_24_ConfigInvertedPairs(pwmNo, config,1);
+	return NULL;
 }
 
 /**
@@ -127,16 +128,17 @@ DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPair(uint16_t pwmNo, pwm_config_t *conf
  * 				   parameters for the PWM pair
  * @return void 
  */
-void BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config)
+DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config)
 {
 	if (pwmNo <= 10)
-		BSP_PWM1_10_ConfigChannels(pwmNo, config,1);
+		return BSP_PWM1_10_ConfigChannels(pwmNo, config,1);
 	else if (pwmNo <= 16)
-		BSP_PWM11_16_ConfigChannels(pwmNo, config,1);
+		return BSP_PWM11_16_ConfigChannels(pwmNo, config,1);
 	else if (pwmNo <= 22)
-		BSP_PWM17_22_ConfigChannels(pwmNo, config,1);
+		return BSP_PWM17_22_ConfigChannels(pwmNo, config,1);
 	else if (pwmNo <= 24)
-		BSP_PWM23_24_ConfigChannels(pwmNo, config,1);
+		return BSP_PWM23_24_ConfigChannels(pwmNo, config,1);
+	return NULL;
 }
 
 /**
@@ -232,7 +234,7 @@ float BSP_PWM_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t* config
  * @param callback Specifies the function to be called when the PWM is reset
  * @param priority Interrupt priority. Range (0-15). Here 0 is the highest priority
  */
-void BSP_PWM_Config_Interrupt(uint32_t pwmNo, bool enable, PWMResetCallback callback, int priority)
+void BSP_PWM_ConfigInterrupt(uint32_t pwmNo, bool enable, PWMResetCallback callback, int priority)
 {
 	if (pwmNo <= 10)
 		BSP_PWM1_10_Config_Interrupt(pwmNo, enable, callback, priority);

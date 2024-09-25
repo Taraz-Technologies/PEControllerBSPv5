@@ -43,7 +43,7 @@
 static bool pwm17_22_enabled = false;
 /** Timer configurations
  */
-static TIM_OC_InitTypeDef sConfigOC =
+static TIM_OC_InitTypeDef sConfigOC_8 =
 {
 		.OCMode = TIM_OCMODE_PWM1,
 		.Pulse = 0,
@@ -53,12 +53,12 @@ static TIM_OC_InitTypeDef sConfigOC =
 		.OCIdleState = TIM_OCIDLESTATE_RESET,
 		.OCNIdleState = TIM_OCIDLESTATE_RESET,  // --TODO-- Confirm if it should be set/reset
 };
-static float dutyDeadTime = 0;
-static bool isEdgeAligned;
-static bool isDtEnabled;
+static float dutyDeadTime_8 = 0;
+static bool isEdgeAligned_8;
+static bool isDtEnabled_8;
 /** keeps the callback function of all PWM module
  */
-static PWMResetCallback resetCallback = NULL;
+static PWMResetCallback resetCallback_8 = NULL;
 /********************************************************************************
  * Global Variables
  *******************************************************************************/
@@ -89,14 +89,14 @@ static void PWM17_22_Drivers_Init(pwm_config_t* config)
 		htim8.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED2;
 		htim8.Init.Period = (uint32_t)((TIM8_FREQ_Hz / 2.f) / config->module->f);
 		htim8.Init.RepetitionCounter = 1;
-		isEdgeAligned = false;
+		isEdgeAligned_8 = false;
 	}
 	else
 	{
 		htim8.Init.CounterMode = TIM_COUNTERMODE_UP;
 		htim8.Init.Period = (uint32_t)(TIM8_FREQ_Hz / config->module->f) - 1;
 		htim8.Init.RepetitionCounter = 0;
-		isEdgeAligned = true;
+		isEdgeAligned_8 = true;
 	}
 	htim8.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim8.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -142,7 +142,7 @@ static void PWM17_22_Drivers_Init(pwm_config_t* config)
 			}
 		}
 		sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_ENABLE;
-		dutyDeadTime = (config->module->deadtime.nanoSec * (config->module->f / 1000000000.f));
+		dutyDeadTime_8 = (config->module->deadtime.nanoSec * (config->module->f / 1000000000.f));
 	}
 	else
 	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
@@ -156,7 +156,7 @@ static void PWM17_22_Drivers_Init(pwm_config_t* config)
 	if (HAL_TIMEx_ConfigBreakDeadTime(&htim8, &sBreakDeadTimeConfig) != HAL_OK)
 		Error_Handler();
 
-	isDtEnabled = IsDeadtimeEnabled(&config->module->deadtime);
+	isDtEnabled_8 = IsDeadtimeEnabled(&config->module->deadtime);
 
 	pwm17_22_enabled = true;
 }
@@ -181,15 +181,15 @@ float BSP_PWM17_22_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* conf
 
 	if (duty == 0)
 	{
-		*CCRx = isEdgeAligned ? 0 : TIM8->ARR;
+		*CCRx = isEdgeAligned_8 ? 0 : TIM8->ARR;
 	}
 	else
 	{
 		float dutyUse = duty;
-		if (isDtEnabled && config->dutyMode == OUTPUT_DUTY_AT_PWMH)
-			dutyUse += dutyDeadTime;
+		if (isDtEnabled_8 && config->dutyMode == OUTPUT_DUTY_AT_PWMH)
+			dutyUse += dutyDeadTime_8;
 
-		*CCRx = (isEdgeAligned ? dutyUse : (1 - dutyUse)) * TIM8->ARR;
+		*CCRx = (isEdgeAligned_8 ? dutyUse : (1 - dutyUse)) * TIM8->ARR;
 	}
 
 	return duty;
@@ -212,14 +212,14 @@ static void PWM17_22_ConfigInvertedPair(uint32_t pwmNo, pwm_config_t* config)
 	ch = (ch == 0) ? TIM_CHANNEL_1 : (ch == 1) ? TIM_CHANNEL_2 : TIM_CHANNEL_3;
 
 	TIM_OC_InitTypeDef sConfigOCLocal;
-	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC, sizeof(TIM_OC_InitTypeDef));
+	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_8, sizeof(TIM_OC_InitTypeDef));
 
-	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
+	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned_8) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
 	if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOCLocal, ch) != HAL_OK)
 		Error_Handler();
 
 	float oldMax = config->lim.max;
-	config->lim.max = isDtEnabled ? 1 - dutyDeadTime : 1;
+	config->lim.max = isDtEnabled_8 ? 1 - dutyDeadTime_8 : 1;
 	if (oldMax < config->lim.max && oldMax != 0)
 		config->lim.max = oldMax;
 
@@ -268,15 +268,15 @@ float BSP_PWM17_22_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t* c
 	uint32_t ch = (pwmNo - 17) / 2;
 	volatile uint32_t* CCRx = &TIM8->CCR1 + ch;
 	if (duty == 0)
-		*CCRx = isEdgeAligned ? 0 : TIM8->ARR;
+		*CCRx = isEdgeAligned_8 ? 0 : TIM8->ARR;
 	else
 	{
 		float dutyUse = duty;
 		// always OUTPUT_DUTY_AT_PWMH MODE because dead time will be always added if due to common timer
-		if (isDtEnabled)
-			dutyUse += dutyDeadTime;
+		if (isDtEnabled_8)
+			dutyUse += dutyDeadTime_8;
 
-		*CCRx = (isEdgeAligned ? dutyUse : (1 - dutyUse)) * TIM8->ARR;
+		*CCRx = (isEdgeAligned_8 ? dutyUse : (1 - dutyUse)) * TIM8->ARR;
 	}
 	return duty;
 }
@@ -294,14 +294,14 @@ static void PWM17_22_ConfigChannel(uint32_t pwmNo, pwm_config_t* config)
 	ch = ch == 0 ? TIM_CHANNEL_1 : (ch == 1 ? TIM_CHANNEL_2 : TIM_CHANNEL_3);
 
 	TIM_OC_InitTypeDef sConfigOCLocal;
-	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC, sizeof(TIM_OC_InitTypeDef));
+	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_8, sizeof(TIM_OC_InitTypeDef));
 
-	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
+	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned_8) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
 	if (HAL_TIM_PWM_ConfigChannel(&htim8, &sConfigOCLocal, ch) != HAL_OK)
 		Error_Handler();
 
 	float oldMax = config->lim.max;
-	config->lim.max = isDtEnabled ? 1 - dutyDeadTime : 1;
+	config->lim.max = isDtEnabled_8 ? 1 - dutyDeadTime_8 : 1;
 	if (oldMax < config->lim.max && oldMax != 0)
 		config->lim.max = oldMax;
 }
@@ -340,7 +340,7 @@ void BSP_PWM17_22_Config_Interrupt(bool enable, PWMResetCallback callback, int p
 	{
 		if (callback == NULL)
 			return;
-		resetCallback = callback;
+		resetCallback_8 = callback;
 		__HAL_TIM_ENABLE_IT(&htim8, TIM_IT_UPDATE);
 		HAL_NVIC_SetPriority(TIM8_UP_TIM13_IRQn , priority, 0);
 		HAL_NVIC_EnableIRQ(TIM8_UP_TIM13_IRQn );
@@ -349,21 +349,21 @@ void BSP_PWM17_22_Config_Interrupt(bool enable, PWMResetCallback callback, int p
 	{
 		__HAL_TIM_DISABLE_IT(&htim8, TIM_IT_UPDATE);
 		HAL_NVIC_DisableIRQ(TIM8_UP_TIM13_IRQn );
-		resetCallback = NULL;
+		resetCallback_8 = NULL;
 	}
 }
 
 /**
  * @brief Timer8 update IRQ Handler to process Timer 8 interrupts
  */
-void TIM8_UP_IRQHandler(void)
+void TIM8_UP_TIM13_IRQHandler(void)
 {
 	/* TIM Update event */
 	if (__HAL_TIM_GET_FLAG(&htim8, TIM_FLAG_UPDATE) != RESET)
 	{
 		if (__HAL_TIM_GET_IT_SOURCE(&htim8, TIM_IT_UPDATE) != RESET)
 		{
-			resetCallback();
+			resetCallback_8();
 			__HAL_TIM_CLEAR_IT(&htim8, TIM_IT_UPDATE);
 		}
 	}

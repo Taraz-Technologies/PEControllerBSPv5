@@ -147,7 +147,7 @@ extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPairs(uint16_t pwmNo, pwm_config
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
- extern void BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config);
+ extern DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config);
 
 /**
  * @brief Configures consecutive PWM channels
@@ -158,7 +158,7 @@ extern DutyCycleUpdateFnc BSP_PWM_ConfigInvertedPairs(uint16_t pwmNo, pwm_config
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-extern DutyCycleUpdateFnc BSP_PWM_ConfigChannel(uint16_t pwmNo, pwm_config_t *config, uint16_t channelCount);
+extern DutyCycleUpdateFnc BSP_PWM_ConfigChannels(uint16_t pwmNo, pwm_config_t *config, uint16_t channelCount);
 
 /**
  * @brief Update the Duty Cycle of an Inverted Pair
@@ -190,7 +190,7 @@ extern float BSP_PWM_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t*
  * @param callback Specifies the function to be called when the PWM is reset
  * @param priority Interrupt priority. Range (0-15). Here 0 is the highest priority
  */
-extern void BSP_PWM_Config_Interrupt(uint32_t pwmNo, bool enable, PWMResetCallback callback, int priority);
+extern void BSP_PWM_ConfigInterrupt(uint32_t pwmNo, bool enable, PWMResetCallback callback, int priority);
 /**
  * @brief Starts the PWM on required PWM pins. To enable outputs for required channels call BSP_PWMOut_Enable().
  * @code
