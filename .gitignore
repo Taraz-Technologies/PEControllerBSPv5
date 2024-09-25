@@ -55,7 +55,7 @@ dkms.conf
 **/Release/
 **/Docs/
 **/.settings/
-
+**/Projects/PEController/Applications/TestProject
 
 **LICENSE.txt
 **Licence.txt
