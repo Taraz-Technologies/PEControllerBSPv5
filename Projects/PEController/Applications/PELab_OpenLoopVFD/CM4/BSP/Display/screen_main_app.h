@@ -49,6 +49,7 @@ extern "C" {
 #include "stdlib.h"
 #include "utility_lib.h"
 #include "p2p_comms.h"
+#include "open_loop_vf_config.h"
 /********************************************************************************
  * Defines
  *******************************************************************************/
@@ -60,13 +61,13 @@ extern "C" {
  * @note Combined with @ref CONTROL_COL_COUNT, this calculates the rows required by the control area and
  * thus computes the required sizes for each controllable parameter
  */
-#define CONTROL_CONFS_COUNT					(6)
+#define CONTROL_CONFS_COUNT					(VFD_COUNT * 3)
 /**
  * @brief Number of monitored parameters/configurations to be displayed on main screen
  * @note Combined with @ref MONITOR_COL_COUNT, this calculates the rows required by the monitoring area and
  * thus computes the required sizes for each monitor-able parameter
  */
-#define MONITOR_CONFS_COUNT					(6)
+#define MONITOR_CONFS_COUNT					(VFD_COUNT * 3)
 
 /**
  * @brief Number of columns in controls area

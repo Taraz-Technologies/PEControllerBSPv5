@@ -44,6 +44,7 @@ extern "C" {
 #include "general_header.h"
 #include "image_dictionary.h"
 #include "screen_base.h"
+#include "open_loop_vf_config.h"
 /********************************************************************************
  * Defines
  *******************************************************************************/
@@ -53,7 +54,7 @@ extern "C" {
 /**
  * @brief Number of setting groups to be displayed. Size of @ref settingWindows
  */
-#define SETTINGS_WINDOW_COUNT			(2)
+#define SETTINGS_WINDOW_COUNT			(VFD_COUNT)
 /**
   * @}
   */

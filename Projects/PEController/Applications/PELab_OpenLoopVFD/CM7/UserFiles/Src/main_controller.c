@@ -132,6 +132,8 @@ void MainControl_Init(void)
 	BSP_Dout_SetPortAsGPIO();
 	BSP_Dout_SetPortValue(0);
 
+	HAL_Delay(1000);
+
 	openLoopVfConfig1.inverterConfig.s1PinNos[0] = VFD1_PIN1;
 	openLoopVfConfig1.inverterConfig.s1PinNos[1] = openLoopVfConfig1.inverterConfig.s1PinNos[0] + LEG_SWITCH_COUNT;
 	openLoopVfConfig1.inverterConfig.s1PinNos[2] = openLoopVfConfig1.inverterConfig.s1PinNos[1] + LEG_SWITCH_COUNT;

@@ -59,7 +59,8 @@ extern "C" {
 /**
  * @brief In inverters that have four legs per inverter that 4th leg will receive the same signal as the third leg, so they will both be interchangeable.
  */
-#define HAS_DUPLICATE_SWITCH			(PECONTROLLER_CONFIG == PLB_TNPC || PECONTROLLER_CONFIG == PLB_MMC ? 1 : 0)
+#define HAS_DUPLICATE_SWITCH			(PECONTROLLER_CONFIG == PLB_TNPC || PECONTROLLER_CONFIG == PLB_MMC || \
+											PECONTROLLER_CONFIG == PLB_4PH ? 1 : 0)
 /**
  * @brief No of relays in the system
  */

@@ -79,11 +79,13 @@ data_param_group_t settingWindows[SETTINGS_WINDOW_COUNT] =
 				.paramPointers = firstWindowParams,
 				.paramCount = 3
 		},
+#if VFD_COUNT == 2
 		{
 				.title = "Inverter 2 Configuration",
 				.paramPointers = secondWindowParams,
 				.paramCount = 3
 		}
+#endif
 };
 /********************************************************************************
  * Function Prototypes
