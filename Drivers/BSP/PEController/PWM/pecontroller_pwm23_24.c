@@ -1,10 +1,10 @@
 /**
  ********************************************************************************
- * @file    	pecontroller_pwm11_16.c
- * @author 		Waqas Ehsan Butt
- * @date    	December 2, 2021
+ * @file    	pecontroller_pwm23_24.c
+ * @author 		Ahsan Waheed Abbasi
+ * @date    	September 05, 2024
  *
- * @brief		Controls the PWM 11-16
+ * @brief		Controls the PWM 23-24
  ********************************************************************************
  * @attention
  *
@@ -22,7 +22,7 @@
 /********************************************************************************
  * Includes
  *******************************************************************************/
-#include "pecontroller_pwm11_16.h"
+#include "pecontroller_pwm23_24.h"
 /********************************************************************************
  * Defines
  *******************************************************************************/
@@ -40,10 +40,10 @@
  *******************************************************************************/
 /** <c>true</c> if module previously initialized
  */
-static bool pwm11_16_enabled = false;
+static bool pwm23_24_enabled = false;
 /** Timer configurations
  */
-static TIM_OC_InitTypeDef sConfigOC_1 =
+static TIM_OC_InitTypeDef sConfigOC_16 =
 {
 		.OCMode = TIM_OCMODE_PWM1,
 		.Pulse = 0,
@@ -53,18 +53,18 @@ static TIM_OC_InitTypeDef sConfigOC_1 =
 		.OCIdleState = TIM_OCIDLESTATE_RESET,
 		.OCNIdleState = TIM_OCIDLESTATE_RESET,  // --TODO-- Confirm if it should be set/reset
 };
-static float dutyDeadTime_1 = 0;
-static bool isEdgeAligned_1;
-static bool isDtEnabled_1;
+static float dutyDeadTime_16 = 0;
+static bool isEdgeAligned_16;
+static bool isDtEnabled_16;
 /** keeps the callback function of all PWM module
  */
-static PWMResetCallback resetCallback_1 = NULL;
+static PWMResetCallback resetCallback_16 = NULL;
 /********************************************************************************
  * Global Variables
  *******************************************************************************/
-/** Timer 1 handle
+/** Timer 16 handle
  */
-TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim16;
 /********************************************************************************
  * Function Prototypes
  *******************************************************************************/
@@ -73,45 +73,32 @@ TIM_HandleTypeDef htim1;
  * Code
  *******************************************************************************/
 /**
- * @brief Initialize the relevant PWM modules (Timer1). Frequency is constant for the PWMs 11-16
+ * @brief Initialize the relevant PWM modules (Timer16). Frequency is constant for the PWMs 23-24
  * @param *config Pointer to a structure that contains the configuration
  * 				   parameters for the PWM pair
  */
-static void PWM11_16_Drivers_Init(pwm_config_t* config)
+static void PWM23_24_Drivers_Init(pwm_config_t* config)
 {
-	if(pwm11_16_enabled)
+	if(pwm23_24_enabled)
 		return;
-	__HAL_RCC_TIM1_CLK_ENABLE();
-	htim1.Instance = TIM1;
-	htim1.Init.Prescaler = 0;
-	if(config->module->alignment == CENTER_ALIGNED)
-	{
-		htim1.Init.CounterMode = TIM_COUNTERMODE_CENTERALIGNED2;
-		htim1.Init.Period = (uint32_t)((TIM1_FREQ_Hz / 2.f) / config->module->f);
-		htim1.Init.RepetitionCounter = 1;
-		isEdgeAligned_1 = false;
-	}
-	else
-	{
-		htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-		htim1.Init.Period = (uint32_t)(TIM1_FREQ_Hz / config->module->f) - 1;
-		htim1.Init.RepetitionCounter = 0;
-		isEdgeAligned_1 = true;
-	}
-	htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-	htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+	__HAL_RCC_TIM16_CLK_ENABLE();
+	htim16.Instance = TIM16;
+	htim16.Init.Prescaler = 0;
+	htim16.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim16.Init.Period = (uint32_t)(TIM16_FREQ_Hz / config->module->f) - 1;
+	htim16.Init.RepetitionCounter = 0;
+	isEdgeAligned_16 = true;
+
+	htim16.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim16.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim16) != HAL_OK)
 		Error_Handler();
 	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-	if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+	if (HAL_TIM_ConfigClockSource(&htim16, &sClockSourceConfig) != HAL_OK)
 		Error_Handler();
-	if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+	if (HAL_TIM_PWM_Init(&htim16) != HAL_OK)
 		Error_Handler();
-
-	// Trigger settings
-	BSP_Timer_SetInputTrigger(&htim1, config->slaveOpts->src == TIM_TRG_SRC_TIM1 ? NULL : config->slaveOpts);
-	BSP_Timer_SetOutputTrigger(&htim1, config->masterOpts);
 
 	// Deadtime settings
 	TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
@@ -120,7 +107,7 @@ static void PWM11_16_Drivers_Init(pwm_config_t* config)
 	sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
 	if (IsDeadtimeEnabled(&config->module->deadtime))
 	{
-		int valBase = (uint32_t)((config->module->deadtime.nanoSec) * (TIM1_FREQ_Hz / 1000000000.f));
+		int valBase = (uint32_t)((config->module->deadtime.nanoSec) * (TIM16_FREQ_Hz / 1000000000.f));
 		if (valBase < 128)
 			sBreakDeadTimeConfig.DeadTime = valBase;
 		else
@@ -142,27 +129,24 @@ static void PWM11_16_Drivers_Init(pwm_config_t* config)
 			}
 		}
 		sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_ENABLE;
-		dutyDeadTime_1 = (config->module->deadtime.nanoSec * (config->module->f / 1000000000.f));
+		dutyDeadTime_16 = (config->module->deadtime.nanoSec * (config->module->f / 1000000000.f));
 	}
 	else
-		sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+	sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
 	sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
 	sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
 	sBreakDeadTimeConfig.BreakFilter = 0;
-	sBreakDeadTimeConfig.Break2State = TIM_BREAK2_DISABLE;
-	sBreakDeadTimeConfig.Break2Polarity = TIM_BREAK2POLARITY_HIGH;
-	sBreakDeadTimeConfig.Break2Filter = 0;
 	sBreakDeadTimeConfig.AutomaticOutput = IsDeadtimeEnabled(&config->module->deadtime) ? TIM_AUTOMATICOUTPUT_ENABLE : TIM_AUTOMATICOUTPUT_DISABLE;
-	if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+	if (HAL_TIMEx_ConfigBreakDeadTime(&htim16, &sBreakDeadTimeConfig) != HAL_OK)
 		Error_Handler();
 
-	isDtEnabled_1 = IsDeadtimeEnabled(&config->module->deadtime);
+	isDtEnabled_16 = IsDeadtimeEnabled(&config->module->deadtime);
 
-	pwm11_16_enabled = true;
+	pwm23_24_enabled = true;
 }
 /**
  * @brief Update the Duty Cycle of an Inverted Pair
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 11-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 23-24). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
@@ -171,23 +155,23 @@ static void PWM11_16_Drivers_Init(pwm_config_t* config)
  * 				   parameters for the PWM pair
  * @return float Duty cycle applied in this cycle. May differ from the duty variable if outside permitted limits
  */
-float BSP_PWM11_16_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
+float BSP_PWM23_24_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
 {
 	/* check for duty cycle limits */
-	if (duty > config->lim.max)
-		duty = config->lim.max;
-	else if (duty < config->lim.min)
-		duty = config->lim.min;
+	duty = (duty > config->lim.max) ? config->lim.max : (duty < config->lim.min ? config->lim.min : duty);
+	volatile uint16_t* CCRx = &TIM16->CCR1 + 0;  // Cache pointer to CCRx register
 
-	uint32_t ch = (pwmNo - 11) / 2;
 	if (duty == 0)
-		*(((uint32_t*)&(TIM1->CCR1)) + ch) = isEdgeAligned_1 ? 0 : TIM1->ARR;
+	{
+		*CCRx = 0;
+	}
 	else
 	{
 		float dutyUse = duty;
-		if (isDtEnabled_1 && config->dutyMode == OUTPUT_DUTY_AT_PWMH)
-			dutyUse += dutyDeadTime_1;
-		*(((uint32_t*)&(TIM1->CCR1)) + ch) = (isEdgeAligned_1 ? dutyUse : (1 - dutyUse)) * TIM1->ARR;
+		if (isDtEnabled_16 && config->dutyMode == OUTPUT_DUTY_AT_PWMH)
+			dutyUse += dutyDeadTime_16;
+
+		*CCRx = (isEdgeAligned_16 ? dutyUse : (1 - dutyUse)) * TIM16->ARR;
 	}
 
 	return duty;
@@ -195,29 +179,27 @@ float BSP_PWM11_16_UpdatePairDuty(uint32_t pwmNo, float duty, pwm_config_t* conf
 
 /**
  * @brief Configures a single inverted pair for PWM
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 11-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 23-24). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM pair
  */
-static void PWM11_16_ConfigInvertedPair(uint32_t pwmNo, pwm_config_t* config)
+static void PWM23_24_ConfigInvertedPair(uint32_t pwmNo, pwm_config_t* config)
 {
-	uint32_t ch = (pwmNo - 11) / 2;
-	uint32_t isCh2 = (pwmNo - 11) % 2;
-
-	ch = ch == 0 ? TIM_CHANNEL_1 : (ch == 1 ? TIM_CHANNEL_2 : TIM_CHANNEL_3);
+	uint32_t ch = TIM_CHANNEL_1;
+	uint32_t isCh2 = (pwmNo - 23) % 2;
 
 	TIM_OC_InitTypeDef sConfigOCLocal;
-	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_1, sizeof(TIM_OC_InitTypeDef));
+	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_16, sizeof(TIM_OC_InitTypeDef));
 
-	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned_1) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
-	if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOCLocal, ch) != HAL_OK)
+	sConfigOCLocal.OCMode = isCh2 ? TIM_OCMODE_PWM2 : TIM_OCMODE_PWM1;
+	if (HAL_TIM_PWM_ConfigChannel(&htim16, &sConfigOCLocal, ch) != HAL_OK)
 		Error_Handler();
 
 	float oldMax = config->lim.max;
-	config->lim.max = isDtEnabled_1 ? 1 - dutyDeadTime_1 : 1;
+	config->lim.max = isDtEnabled_16 ? 1 - dutyDeadTime_16 : 1;
 	if (oldMax < config->lim.max && oldMax != 0)
 		config->lim.max = oldMax;
 
@@ -226,7 +208,7 @@ static void PWM11_16_ConfigInvertedPair(uint32_t pwmNo, pwm_config_t* config)
 }
 /**
  * @brief Configures consecutive inverted pairs for PWM
- * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 11-16). <br>
+ * @param pwmNo Channel no of reference channel is the PWM pair (Valid Values 23-24). <br>
  * 				<b>Pairs are classified as :</b>
  * 				-# CH1 = Reference channel available at pin pwmNo
  * 				-# CH2 = Inverted Channel from reference available at pin pwmNo + 1 if pwmNo is odd else pwmNo - 1
@@ -236,93 +218,93 @@ static void PWM11_16_ConfigInvertedPair(uint32_t pwmNo, pwm_config_t* config)
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-DutyCycleUpdateFnc BSP_PWM11_16_ConfigInvertedPairs(uint32_t pwmNo, pwm_config_t* config, int pairCount)
+DutyCycleUpdateFnc BSP_PWM23_24_ConfigInvertedPairs(uint32_t pwmNo, pwm_config_t* config, int pairCount)
 {
-	if(!pwm11_16_enabled)
-		PWM11_16_Drivers_Init(config);
+	if(!pwm23_24_enabled)
+		PWM23_24_Drivers_Init(config);
 	while (pairCount--)
 	{
-		PWM11_16_ConfigInvertedPair(pwmNo, config);
+		PWM23_24_ConfigInvertedPair(pwmNo, config);
 		pwmNo += 2;
 	}
-	return BSP_PWM11_16_UpdatePairDuty;
+	return BSP_PWM23_24_UpdatePairDuty;
 }
 
 /**
  * @brief Update the Duty Cycle of a channel
- * @param pwmNo PWM channel to be configured (Valid Values 11-16)
+ * @param pwmNo PWM channel to be configured (Valid Values 23-24)
  * @param duty duty cycle to be applied to the channel (Range 0-1 or given in the config parameter)
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM channel
  * @return float Duty cycle applied in this cycle. May differ from the duty variable if outside permitted limits
  */
-float BSP_PWM11_16_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
+float BSP_PWM23_24_UpdateChannelDuty(uint32_t pwmNo, float duty, pwm_config_t* config)
 {
 	/* check for duty cycle limits */
 	// no need of minimum limit because it may cause confusion as timer is constant
 	if (duty > config->lim.max)
 		duty = config->lim.max;
 
-	uint32_t ch = (pwmNo - 11) / 2;
+	volatile uint16_t* CCR = &TIM16->CCR1 + 0;
+
 	if (duty == 0)
-		*(((uint32_t*)&(TIM1->CCR1)) + ch) = isEdgeAligned_1 ? 0 : TIM1->ARR;
+		*CCR = 0;
 	else
 	{
 		float dutyUse = duty;
 		// always OUTPUT_DUTY_AT_PWMH MODE because dead time will be always added if due to common timer
-		if (isDtEnabled_1)
-			dutyUse += dutyDeadTime_1;
-
-		*(((uint32_t*)&(TIM1->CCR1)) + ch) = (isEdgeAligned_1? dutyUse : (1 - dutyUse)) * TIM1->ARR;
+		if (isDtEnabled_16)
+		{
+			dutyUse += dutyDeadTime_16;
+		}
+		*CCR = dutyUse * TIM16->ARR;
 	}
 	return duty;
 }
 /**
  * @brief Configures a single PWM channel
- * @param pwmNo Channel no of the PWM Channel in the pair (Valid Values 11-16)
+ * @param pwmNo Channel no of the PWM Channel in the pair (Valid Values 23-24)
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM channels
  */
-static void PWM11_16_ConfigChannel(uint32_t pwmNo, pwm_config_t* config)
+static void PWM23_24_ConfigChannel(uint32_t pwmNo, pwm_config_t* config)
 {
-	uint32_t ch = (pwmNo - 11) / 2;
-	uint32_t isCh2 = (pwmNo - 11) % 2;
-
-	ch = ch == 0 ? TIM_CHANNEL_1 : (ch == 1 ? TIM_CHANNEL_2 : TIM_CHANNEL_3);
+	uint32_t ch = TIM_CHANNEL_1;
+	uint32_t isCh2 = (pwmNo - 23) % 2;
 
 	TIM_OC_InitTypeDef sConfigOCLocal;
-	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_1, sizeof(TIM_OC_InitTypeDef));
+	memcpy((void*)&sConfigOCLocal, (void*)&sConfigOC_16, sizeof(TIM_OC_InitTypeDef));
 
-	sConfigOCLocal.OCMode = (isCh2 ^ isEdgeAligned_1) ? TIM_OCMODE_PWM1 : TIM_OCMODE_PWM2;
-	if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOCLocal, ch) != HAL_OK)
+	sConfigOCLocal.OCMode = isCh2 ? TIM_OCMODE_PWM2 : TIM_OCMODE_PWM1;  // Use PWM2 mode for specific pwmNo, otherwise PWM1
+
+	if (HAL_TIM_PWM_ConfigChannel(&htim16, &sConfigOCLocal, ch) != HAL_OK)
 		Error_Handler();
-
 	float oldMax = config->lim.max;
-	config->lim.max = isDtEnabled_1 ? 1 - dutyDeadTime_1 : 1;
+	config->lim.max = isDtEnabled_16 ? (1 - dutyDeadTime_16) : 1;
 	if (oldMax < config->lim.max && oldMax != 0)
 		config->lim.max = oldMax;
 }
 
 /**
  * @brief Configures consecutive PWM channels
- * @param pwmNo Channel no of the first PWM Channel in the pair (Valid Values 11-16)
+ * @param pwmNo Channel no of the first PWM Channel in the pair (Valid Values 23-24)
  * @param *config Pointer to a  pwm_config_t structure that contains the configuration
  * 				   parameters for the PWM channels
- * @param chCount No of channels to be configured with the setting. Max supported value is 3. The value should be counted while skipping even channels.
- * 					e.g. if pwmNo = 11 and chCount = 2 the PWMs 11 and 13 will be configured with the specified setting while PWM12 will be the inverted version of PWM11
+ * @param chCount No of channels to be configured with the setting. Max supported value is 2. The value should be counted while skipping even channels.
+ * 					e.g. if pwmNo = 23 and chCount = 2 the PWMs 23 and 24 will be configured with the specified setting while PWM24 will be the inverted version of PWM23
  * @return DutyCycleUpdateFnc Returns the function pointer of the type DutyCycleUpdateFnc which needs to be called
  * 						  whenever the duty cycles of the pair need to be updated
  */
-DutyCycleUpdateFnc BSP_PWM11_16_ConfigChannels(uint32_t pwmNo, pwm_config_t* config, int chCount)
+DutyCycleUpdateFnc BSP_PWM23_24_ConfigChannels(uint32_t pwmNo, pwm_config_t* config, int chCount)
 {
-	if(!pwm11_16_enabled)
-		PWM11_16_Drivers_Init(config);
+	if(!pwm23_24_enabled)
+		PWM23_24_Drivers_Init(config);
 	while (chCount--)
 	{
-		PWM11_16_ConfigChannel(pwmNo, config);
+		PWM23_24_ConfigChannel(pwmNo, config);
 		pwmNo += 2;						// No need to configure the other
 	}
-	return BSP_PWM11_16_UpdateChannelDuty;
+	return BSP_PWM23_24_UpdateChannelDuty;
 }
 
 /**
@@ -331,37 +313,37 @@ DutyCycleUpdateFnc BSP_PWM11_16_ConfigChannels(uint32_t pwmNo, pwm_config_t* con
  * @param callback Specifies the function to be called when the PWM is reset
  * @param priority Interrupt priority. Range (0-15). Here 0 is the highest priority
  */
-void BSP_PWM11_16_Config_Interrupt(bool enable, PWMResetCallback callback, int priority)
+void BSP_PWM23_24_Config_Interrupt(bool enable, PWMResetCallback callback, int priority)
 {
 	if (enable)
 	{
 		if (callback == NULL)
 			return;
-		resetCallback_1 = callback;
-		__HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE);
-		HAL_NVIC_SetPriority(TIM1_UP_IRQn, priority, 0);
-		HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
+		resetCallback_16 = callback;
+		__HAL_TIM_ENABLE_IT(&htim16, TIM_IT_UPDATE);
+		HAL_NVIC_SetPriority(TIM16_IRQn, priority, 0);
+		HAL_NVIC_EnableIRQ(TIM16_IRQn);
 	}
 	else
 	{
-		__HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
-		HAL_NVIC_DisableIRQ(TIM1_UP_IRQn);
-		resetCallback_1 = NULL;
+		__HAL_TIM_DISABLE_IT(&htim16, TIM_IT_UPDATE);
+		HAL_NVIC_DisableIRQ(TIM16_IRQn);
+		resetCallback_16 = NULL;
 	}
 }
 
 /**
- * @brief Timer1 update IRQ Handler to process Timer 1 interrupts
+ * @brief Timer16 update IRQ Handler to process Timer 16 interrupts
  */
-void TIM1_UP_IRQHandler(void)
+void TIM16_IRQHandler(void)
 {
 	/* TIM Update event */
-	if (__HAL_TIM_GET_FLAG(&htim1, TIM_FLAG_UPDATE) != RESET)
+	if (__HAL_TIM_GET_FLAG(&htim16, TIM_FLAG_UPDATE) != RESET)
 	{
-		if (__HAL_TIM_GET_IT_SOURCE(&htim1, TIM_IT_UPDATE) != RESET)
+		if (__HAL_TIM_GET_IT_SOURCE(&htim16, TIM_IT_UPDATE) != RESET)
 		{
-			resetCallback_1();
-			__HAL_TIM_CLEAR_IT(&htim1, TIM_IT_UPDATE);
+			resetCallback_16();
+			__HAL_TIM_CLEAR_IT(&htim16, TIM_IT_UPDATE);
 		}
 	}
 }

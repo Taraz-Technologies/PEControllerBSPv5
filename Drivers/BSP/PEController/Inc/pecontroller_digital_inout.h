@@ -100,6 +100,26 @@ extern const digital_pin_t* BSP_Dio_SetAsIOPin(uint32_t pinNo, GPIO_PinState sta
  */
 extern const digital_pin_t* BSP_Dio_SetPinAlternateFunction(uint32_t pinNo, uint32_t AlternateFunction);
 /**
+ * @brief Configures a digital input/output pin for PWM (Pulse Width Modulation) functionality.
+ *
+ * This function sets the specified pin to work in alternate function mode (AF_PP)
+ * to support PWM output. The appropriate alternate function for the pin is selected
+ * based on the pin number.
+ *
+ * @param pinNo        The pin number to configure as a PWM pin. This determines
+ *                     which alternate function is used for PWM generation.
+ *
+ * @return const digital_pin_t* Pointer to the initialized digital pin structure.
+ *
+ * @note The alternate function used for PWM depends on the pin number:
+ * - Pins 1 to 6 use `GPIO_AF3_TIM8`.
+ * - Pins 7 and 8 use `GPIO_AF1_TIM16`.
+ *
+ * @warning Ensure that the `pinNo` is within the valid range of available pins
+ *          in the `doutPins` array before calling this function.
+ */
+const digital_pin_t* BSP_Dio_SetAsPWMPin(uint32_t pinNo);
+/**
  * @brief Set the IO Port as Input. Pin 9 is always output
  */
 extern void BSP_Dio_SetAsInputPort(void);
