@@ -108,7 +108,7 @@ main_screen_param_disp_t mainScreenParamDisp = {0};
 /********************************************************************************
  * Code
  *******************************************************************************/
-static void event_handler(lv_event_t * e)
+void event_handler(lv_event_t * e)
 {
 	if (!isActive)
 		return;
@@ -122,6 +122,11 @@ __weak bool IsToggleableParameter(data_param_info_t* _paramInfo)
 {
 	return _paramInfo->type == DTYPE_BOOL ||
 			_paramInfo->type == DTYPE_BIT_ACCESS;
+}
+
+__weak bool IsCommandParameter(data_param_info_t* _paramInfo)
+{
+	return _paramInfo->type == DTYPE_COMMAND;
 }
 
 __weak bool MainScreen_GetToggleableParameterValue(data_param_info_t* _paramInfo)
@@ -162,6 +167,17 @@ __weak lv_obj_t* MainScreen_CreateToggleableContent(lv_obj_t* container, lv_styl
 	return led;
 }
 
+__weak lv_obj_t* MainScreen_CreateCommandContent(lv_obj_t* container, lv_style_t* nameStyle, const char* name)
+{
+	/******************************* Styling **************************************/
+	lv_obj_t* lblValue = lv_label_create_general(container, nameStyle, name, NULL, NULL);
+	lv_obj_set_width(lblValue, lv_pct(100));
+	lv_obj_align(lblValue, LV_ALIGN_CENTER, 0, 0);
+	lv_label_set_long_mode(lblValue, LV_LABEL_LONG_WRAP);
+
+	return lblValue;
+}
+
 #if CONTROL_CONFS_COUNT > 0
 __weak lv_obj_t* MainScreen_CreateControlCell(lv_obj_t* parent, int index, data_param_info_t* _paramInfo, const char* txtValue)
 {
@@ -186,6 +202,11 @@ __weak lv_obj_t* MainScreen_CreateControlCell(lv_obj_t* parent, int index, data_
 	{
 		lv_obj_t* container = lv_container_create_general(parent, &paramGridStyle, row, col, event_handler, PARAM_TAG(index));
 		return MainScreen_CreateToggleableContent(container, &paramValueStyle, _paramInfo->name);
+	}
+	else if (IsCommandParameter(_paramInfo))
+	{
+		lv_obj_t* container = lv_container_create_general(parent, &paramGridStyle, row, col, event_handler, PARAM_TAG(index));
+		return MainScreen_CreateCommandContent(container, &paramValueStyle, _paramInfo->name);
 	}
 	else
 	{
@@ -231,7 +252,7 @@ __weak void MainScreen_CreateControlArea(lv_obj_t* parent, int row, int col)
 	char txt[20];
 	for (int i = 0; i < CONTROL_CONFS_COUNT; i++)
 	{
-		if (!IsToggleableParameter(mainScreenControlConfs[i]))
+		if (!(IsToggleableParameter(mainScreenControlConfs[i]) || IsCommandParameter(mainScreenControlConfs[i])))
 			GetDataParameter_InText(mainScreenControlConfs[i], txt, true);
 		mainScreenParamDisp.lblsControl[i] = MainScreen_CreateControlCell(grid, i, mainScreenControlConfs[i], txt);
 	}
@@ -262,6 +283,11 @@ __weak lv_obj_t* MainScreen_CreateMonitorCell(lv_obj_t* parent, int index, data_
 	{
 		lv_obj_t* container = lv_container_create_general(parent, &paramGridStyle, row, col, NULL, NULL);
 		return MainScreen_CreateToggleableContent(container, &paramValueStyle, _paramInfo->name);
+	}
+	else if (IsCommandParameter(_paramInfo))
+	{
+		lv_obj_t* container = lv_container_create_general(parent, &paramGridStyle, row, col, event_handler, PARAM_TAG(index));
+		return MainScreen_CreateCommandContent(container, &paramValueStyle, _paramInfo->name);
 	}
 	else
 	{
@@ -309,7 +335,7 @@ __weak void MainScreen_CreateMonitorArea(lv_obj_t* parent, int row, int col)
 	char txt[20];
 	for (int i = 0; i < MONITOR_CONFS_COUNT; i++)
 	{
-		if (!IsToggleableParameter(mainScreenMonitorConfs[i]))
+		if (!(IsToggleableParameter(mainScreenMonitorConfs[i]) || IsCommandParameter(mainScreenMonitorConfs[i])))
 			GetDataParameter_InText(mainScreenMonitorConfs[i], txt, true);
 		mainScreenParamDisp.lblsMonitor[i] = MainScreen_CreateMonitorCell(grid, i, mainScreenMonitorConfs[i], txt);
 	}
@@ -384,7 +410,7 @@ __weak void MainScreen_RefreshAppArea(void)
 			else
 				lv_led_off(mainScreenParamDisp.lblsControl[i]);
 		}
-		else
+		else if (IsCommandParameter(mainScreenControlConfs[i]) == false)
 		{
 			GetDataParameter_InText(mainScreenControlConfs[i], txt, true);
 			lv_label_set_text(mainScreenParamDisp.lblsControl[i], txt);
@@ -441,14 +467,14 @@ __weak screen_type_t MainScreen_AppTouchDetect(uint8_t _tag)
 		{
 			data_union_t value;
 			device_err_t err = GetDataParameter(mainScreenControlConfs[index], &value);
-			if (err != ERR_OK)
+			if (err != APP_ERR_OK)
 			{
 				DisplayMessage(errInfo[err].caption, errInfo[err].desc);
 				return SCREEN_NONE;
 			}
 			value.b = value.b ? false : true;
 			err = SetDataParameter(mainScreenControlConfs[index], value);
-			if (err != ERR_OK)
+			if (err != APP_ERR_OK)
 			{
 				DisplayMessage(errInfo[err].caption, errInfo[err].desc);
 				return SCREEN_NONE;
@@ -460,13 +486,13 @@ __weak screen_type_t MainScreen_AppTouchDetect(uint8_t _tag)
 			data_union_t value;
 			value.bits = BITS_TOGGLE;
 			device_err_t err = SetDataParameter(mainScreenControlConfs[index], value);
-			if (err != ERR_OK)
+			if (err != APP_ERR_OK)
 			{
 				DisplayMessage(errInfo[err].caption, errInfo[err].desc);
 				return SCREEN_NONE;
 			}
 		}
-		else
+		else if (mainScreenControlConfs[index]->type != DTYPE_COMMAND)
 		{
 			GetDataParameter_InText(mainScreenControlConfs[index], txt, false);
 			ConfigScreen_LoadParam(mainScreenControlConfs[index], txt);

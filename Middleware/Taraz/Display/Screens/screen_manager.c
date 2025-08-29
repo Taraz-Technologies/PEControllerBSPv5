@@ -87,6 +87,12 @@ extern void AppInfoScreen_Init(screens_t* screen);
 /********************************************************************************
  * Code
  *******************************************************************************/
+__weak void Screens_InitUserScreens(screens_t* screens)
+{
+	// Template
+	//AppInfoScreen_Init(&screens[SCREEN_APPINFO]);
+}
+
 static void Screens_Init(void)
 {
 	SplashScreen_Init(&screens[SCREEN_SPLASH]);
@@ -94,6 +100,7 @@ static void Screens_Init(void)
 	ConfigScreen_Init(&screens[SCREEN_CONF]);
 	IntellisensScreen_Init(&screens[SCREEN_intelliSENS]);
 	AppInfoScreen_Init(&screens[SCREEN_APPINFO]);
+	Screens_InitUserScreens(screens);
 }
 
 static void Measurements_Init(adc_info_t* _adcInfo)

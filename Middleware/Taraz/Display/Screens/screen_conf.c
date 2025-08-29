@@ -338,7 +338,7 @@ static device_err_t UpdateMeasurementSettings(void)
 			atof_custom(lv_textarea_get_text(measureData.objs.sensitivity), &sensitivity) &&
 			atof_custom(lv_textarea_get_text(measureData.objs.offset), &offset);
 	if (isValid == false)
-		return ERR_INVALID_TEXT;
+		return APP_ERR_INVALID_TEXT;
 	device_err_t err = BSP_ADC_UpdateConfig(dispMeasures.adcInfo, dispMeasures.adcInfo->fs, measureData.measurementIndex, freq, sensitivity, offset, (data_units_t)measureData.unitIndex);
 	dispMeasures.chMeasures[measureData.measurementIndex].type = (measure_type_t)measureData.typeIndex;
 	return err;
@@ -370,7 +370,7 @@ static device_err_t UpdateParameter(void)
 {
 	if(varData.paramInfo != NULL)
 		return SetDataParameter_FromText(varData.paramInfo, lv_textarea_get_text(varData.objs.lblValue));
-	return ERR_OK;
+	return APP_ERR_OK;
 }
 
 #endif
@@ -476,7 +476,7 @@ void ConfigScreen_LoadSettings(data_param_group_t* _paramGroups, int _groupCount
 static device_err_t UpdateSettings(void)
 {
 	if (confFieldData.paramGroups == NULL || confFieldData.groupCount <= 0 || confFieldData.objs == NULL || confFieldData.settingsCount < 0)
-		return ERR_OK;
+		return APP_ERR_OK;
 
 	int index = 0;
 	for (int i = 0; i < confFieldData.groupCount; i++)
@@ -485,13 +485,13 @@ static device_err_t UpdateSettings(void)
 		{
 			data_param_info_t* param = confFieldData.paramGroups[i].paramPointers[j];
 			device_err_t err = SetDataParameter_FromText(param, IsEditableParamField(param) == false ? lv_label_get_text(confFieldData.objs[index].value) : lv_textarea_get_text(confFieldData.objs[index].value));
-			if (err != ERR_OK)
+			if (err != APP_ERR_OK)
 				return err;
 			index++;
 		}
 	}
 
-	return ERR_OK;
+	return APP_ERR_OK;
 }
 
 #endif
@@ -531,14 +531,14 @@ static screen_type_t Refresh(void)
 			ShowSpecificSettingWindow(confFieldData.currentSettingIndex = confFieldData.currentSettingIndex > 0 ? confFieldData.currentSettingIndex - 1 : confFieldData.groupCount - 1);
 		else if (tagBuff == TAG_OK)
 		{
-			device_err_t err = ERR_OK;
+			device_err_t err = APP_ERR_OK;
 			if (confType == CONF_MEASURE)
 				err = UpdateMeasurementSettings();
 			else if (confType == CONF_PARAM)
 				err = UpdateParameter();
 			else if (confType == CONF_SETTINGS)
 				err = UpdateSettings();
-			if (err == ERR_OK)
+			if (err == APP_ERR_OK)
 				return SCREEN_PREVIOUS;
 			DisplayMessage(errInfo[err].caption, errInfo[err].desc);
 			return SCREEN_NONE;

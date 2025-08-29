@@ -110,20 +110,28 @@ extern "C" {
 /** @defgroup PEDISPLAYSCREEN_Exported_Typedefs Typedefs
   * @{
   */
+
+#ifndef SCREEN_TYPE_LIST
+#define SCREEN_TYPE_LIST \
+    X(SCREEN_SPLASH)       \
+    X(SCREEN_MAIN)	 \
+    X(SCREEN_CONF)       \
+    X(SCREEN_APPINFO)	 \
+    X(SCREEN_intelliSENS)       \
+    X(SCREEN_COUNT)	 \
+    X(SCREEN_NONE)       \
+    X(SCREEN_PREVIOUS)
+#endif
 /**
  * @brief Defines the available screen types
  */
 typedef enum
 {
-	SCREEN_SPLASH = 0, /**< Splash Screen */
-	SCREEN_MAIN,       /**< Main Screen */
-	SCREEN_CONF,       /**< Configuration Screen */
-	SCREEN_APPINFO,    /**< Application Information Screen */
-	SCREEN_intelliSENS,/**< intelliSENS Information Screen */
-	SCREEN_COUNT,      /**< Not a type. Use this to get the total number of legal types */
-	SCREEN_NONE,       /**< Invalid Screen */
-	SCREEN_PREVIOUS,   /**< Previous Screen */
+#define X(name) name,
+    SCREEN_TYPE_LIST
+#undef X
 } screen_type_t;
+
 /**
  * @brief X-Axis alignment for the image
  */

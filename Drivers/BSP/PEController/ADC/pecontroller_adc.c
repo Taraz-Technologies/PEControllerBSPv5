@@ -264,15 +264,15 @@ timer_trigger_src_t BSP_ADC_SetInputOutputTrigger(tim_in_trigger_config_t* _slav
 device_err_t BSP_ADC_UpdateConfig(adc_info_t* _info, float _fs, int _channelIndex, float _freq, float _sensitivity, float _offset, data_units_t _unit)
 {
 	if (_freq > MAX_FREQ || _freq < MIN_FREQ)
-		return ERR_OUT_OF_RANGE;
+		return APP_ERR_OUT_OF_RANGE;
 	if (_sensitivity > MAX_SENSITIVITY || _sensitivity < MIN_SENSITIVITY)
-		return ERR_OUT_OF_RANGE;
+		return APP_ERR_OUT_OF_RANGE;
 	if (_offset > MAX_OFFSET || _offset < MIN_OFFSET)
-		return ERR_OUT_OF_RANGE;
+		return APP_ERR_OUT_OF_RANGE;
 	if (_unit >= UNIT_COUNT)
-		return ERR_OUT_OF_RANGE;
+		return APP_ERR_OUT_OF_RANGE;
 	if (_channelIndex >= TOTAL_MEASUREMENT_COUNT)
-		return ERR_NOT_AVAILABLE;
+		return APP_ERR_NOT_AVAILABLE;
 	_info->freq[_channelIndex] = _freq;
 	_info->sensitivity[_channelIndex] = _sensitivity;
 	_info->offsets[_channelIndex] = _offset;
@@ -280,7 +280,7 @@ device_err_t BSP_ADC_UpdateConfig(adc_info_t* _info, float _fs, int _channelInde
 #if IS_ADC_STATS_CORE && ADC_BULK_STATS
 	tempStats[_channelIndex].sampleCount = GET_SAMPLE_COUNT(_fs, _freq);
 #endif
-	return ERR_OK;
+	return APP_ERR_OK;
 }
 
 #endif
@@ -368,12 +368,26 @@ static void InitStatesFromStorage(uint32_t* data, bool isDataValid)
 	else
 	{
 		// Set default values because the values are invalid
-		for (int i = 0; i < TOTAL_MEASUREMENT_COUNT; i++)
+		for (int i = 0; i < 6; i++)
 		{
-			info->freq[i] = DEFAULT_FREQ;
-			info->sensitivity[i] = DEFAULT_SENSITIVITY;
-			info->offsets[i] = DEFAULT_OFFSET;
-			info->units[i] = DEFAULT_UNIT;
+			info->freq[i] = 1.f;
+			info->sensitivity[i] = 0.3f;
+			info->offsets[i] = 0.f;
+			info->units[i] = UNIT_A;
+		}
+		for (int i = 6; i < 8; i++)
+		{
+			info->freq[i] = 1.f;
+			info->sensitivity[i] = 0.1f;
+			info->offsets[i] = 0.f;
+			info->units[i] = UNIT_A;
+		}
+		for (int i = 8; i < 16; i++)
+		{
+			info->freq[i] = 1.f;
+			info->sensitivity[i] = 0.01f;
+			info->offsets[i] = 0.f;
+			info->units[i] = UNIT_V;
 		}
 	}
 }

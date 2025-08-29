@@ -48,7 +48,7 @@
 /**
  * @brief If you need to profile ADC conversion, enable this macro.
  */
-#define PROFILE_CONVERSION				(1)
+#define PROFILE_CONVERSION				(0)
 #endif
 /********************************************************************************
  * Typedefs
