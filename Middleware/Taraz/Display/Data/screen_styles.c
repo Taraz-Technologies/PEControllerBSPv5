@@ -112,6 +112,7 @@ void BSP_Screen_InitTextAreaStyle(lv_style_t* style, const lv_font_t * font, lv_
 		lv_style_set_text_color(style, *txtColor);
 	lv_style_set_border_width(style, 0);
 }
+
 /**
  * @brief Create a text field with name and value in default style.
  * @param parent Parent object in which field is to be placed.
@@ -179,6 +180,9 @@ void lv_create_default_text_field(lv_obj_t* parent, lv_ta_field_data_t* field, i
 		lv_obj_set_style_bg_color(containerValue, FIELD_FG_COLOR, 0);
 		lv_obj_set_style_text_color(field->valueField, FIELD_FG_FONT_COLOR, 0);
 	}
+
+	field->nameContainer = containerName;
+	field->valueContainer = containerValue;
 }
 /**
  * @brief Create a text field with name and value with given styles.

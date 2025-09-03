@@ -77,6 +77,8 @@ typedef struct
 	lv_obj_t* nameField;					/**< @brief lv_obj_t representing the name label. */
 	lv_obj_t* valueField;					/**< @brief lv_obj_t representing the value label. */
 	lv_obj_t* container;					/**< @brief lv_obj_t representing the overall container. */
+	lv_obj_t* nameContainer;				/**< @brief lv_obj_t representing the name container. */
+	lv_obj_t* valueContainer;				/**< @brief lv_obj_t representing the value container. */
 	const char* nameTxt;					/**< @brief Name of the field. */
 	const char* valueTxt;					/**< @brief Value of the field. */
 	lv_coord_t colWidths[2];				/**< @brief Width of both columns, name and value. */

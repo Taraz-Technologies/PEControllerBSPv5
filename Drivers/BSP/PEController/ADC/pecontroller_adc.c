@@ -343,7 +343,7 @@ static void InitStatesFromStorage(uint32_t* data, bool isDataValid)
 {
 	float* localData = (float*)data;
 	adc_info_t* info = &processedAdcData->info;
-	if (isDataValid)
+	if (false)//isDataValid)
 	{
 		// Get decimal values
 		for (int i = 0; i < TOTAL_MEASUREMENT_COUNT; i++)
@@ -367,25 +367,10 @@ static void InitStatesFromStorage(uint32_t* data, bool isDataValid)
 	}
 	else
 	{
-		// Set default values because the values are invalid
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 16; i++)
 		{
-			info->freq[i] = 1.f;
-			info->sensitivity[i] = 0.3f;
-			info->offsets[i] = 0.f;
-			info->units[i] = UNIT_A;
-		}
-		for (int i = 6; i < 8; i++)
-		{
-			info->freq[i] = 1.f;
-			info->sensitivity[i] = 0.1f;
-			info->offsets[i] = 0.f;
-			info->units[i] = UNIT_A;
-		}
-		for (int i = 8; i < 16; i++)
-		{
-			info->freq[i] = 1.f;
-			info->sensitivity[i] = 0.01f;
+			info->freq[i] = 20.f;
+			info->sensitivity[i] = 1.f;
 			info->offsets[i] = 0.f;
 			info->units[i] = UNIT_V;
 		}
