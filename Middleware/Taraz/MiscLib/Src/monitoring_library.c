@@ -25,6 +25,7 @@
  * Includes
  *******************************************************************************/
 #include "monitoring_library.h"
+#include "float.h"
 /********************************************************************************
  * Defines
  *******************************************************************************/
@@ -117,7 +118,7 @@ uint32_t Stats_Compute_MultiSample_SingleChannel_16offset(float* data, temp_stat
 	// Assign loop count according to the available data length
 	if (sampleCount >= tempStats->samplesLeft)
 	{
-		loopCount = tempStats->samplesLeft - 1;
+		loopCount = tempStats->samplesLeft;
 		newResult = true;
 	}
 	else
@@ -127,15 +128,16 @@ uint32_t Stats_Compute_MultiSample_SingleChannel_16offset(float* data, temp_stat
 	}
 
 	// First loop for copying data
-	while (loopCount-- >= 0)
+	while (loopCount-- > 0)
 	{
+		float val = *data;
 		// Compute the temporary values
-		tempStats->rms += ((*data) * (*data));
-		tempStats->avg += (*data);
-		if (tempStats->max < *data)
-			tempStats->max = *data;
-		if (tempStats->min > *data)
-			tempStats->min = *data;
+		tempStats->rms += (val * val);
+		tempStats->avg += (val);
+		if (tempStats->max < val)
+			tempStats->max = val;
+		if (tempStats->min > val)
+			tempStats->min = val;
 		data += 16;
 	}
 	if (newResult)
@@ -151,8 +153,8 @@ uint32_t Stats_Compute_MultiSample_SingleChannel_16offset(float* data, temp_stat
 		// reset temporary statistics
 		tempStats->rms = 0;
 		tempStats->avg = 0;
-		tempStats->max = -4294967296;
-		tempStats->min = 4294967296;
+		tempStats->max = -FLT_MAX;
+		tempStats->min = FLT_MAX;
 		return 1;
 	}
 
@@ -186,8 +188,8 @@ TCritical void Stats_Reset(temp_stats_data_t* tempStats, stats_data_t* stats, in
 	while (chCount--)
 	{
 		tempStats->rms = tempStats->avg = 0;
-		tempStats->max = -4294967296;
-		tempStats->min = 4294967296;
+		tempStats->max = -FLT_MAX;
+		tempStats->min = FLT_MAX;
 		tempStats->samplesLeft = tempStats->sampleCount;
 		tempStats++;
 
