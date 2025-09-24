@@ -103,6 +103,7 @@ typedef struct
 	float sensitivity[TOTAL_MEASUREMENT_COUNT];			/**< @brief Sensitivity values of each ADC channel.*/
 	float freq[TOTAL_MEASUREMENT_COUNT];				/**< @brief Signal frequencies of each ADC channel, used to compute the statistics of each channel.*/
 	stats_data_t stats[TOTAL_MEASUREMENT_COUNT];		/**< @brief Signal statistics of each ADC channel.*/
+	uint32_t newStatsAvailable[2];
 	float fs;											/**< @brief Current sampling rate of the ADC */
 } adc_info_t;
 /**

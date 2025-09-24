@@ -64,6 +64,10 @@ extern "C" {
  */
 #define ADC_INFO					(PROCESSED_ADC_DATA.info)
 /**
+ * @brief Shortcut for accessing ADC related statistics array.
+ */
+#define ADC_STATS					(ADC_INFO.stats)
+/**
  * @brief Shortcut for accessing messages between CM4 and CM7 core.
  */
 #define CORE_MSGS					(sharedData->p2pMsgs)

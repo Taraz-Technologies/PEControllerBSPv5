@@ -327,9 +327,12 @@ void BSP_ADC_ComputeStatsInBulk(adc_processed_data_t* _processedAdcData, float _
 		int straightCount = RingBuffer_GetCountTillSize(&ringBuffLocal);
 		float* data = (float*)&processedAdcData->dataRecord[ringBuffLocal.rdIndex];
 
-		Stats_Compute_MultiSample_16ch(data, tempStats, (stats_data_t*)processedAdcData->info.stats, pend < straightCount ? pend : straightCount);
+		uint32_t result = Stats_Compute_MultiSample_16ch(data, tempStats, (stats_data_t*)processedAdcData->info.stats, pend < straightCount ? pend : straightCount);
 		if (pend > straightCount)
-			Stats_Compute_MultiSample_16ch((float*)&processedAdcData->dataRecord[0], tempStats, (stats_data_t*)processedAdcData->info.stats, pend - straightCount);
+			result |= Stats_Compute_MultiSample_16ch((float*)&processedAdcData->dataRecord[0], tempStats, (stats_data_t*)processedAdcData->info.stats, pend - straightCount);
+
+		processedAdcData->info.newStatsAvailable[0] |= result;
+		processedAdcData->info.newStatsAvailable[1] |= result;
 
 		ringBuffLocal.rdIndex = ringBuffLocal.wrIndex;
 	}
