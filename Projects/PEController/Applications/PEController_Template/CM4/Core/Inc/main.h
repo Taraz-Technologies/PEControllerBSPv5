@@ -80,16 +80,6 @@ void Error_Handler(void);
 #define maxD4_GPIO_Port GPIOF
 #define maxD5_Pin GPIO_PIN_5
 #define maxD5_GPIO_Port GPIOF
-#define maxD6_Pin GPIO_PIN_6
-#define maxD6_GPIO_Port GPIOF
-#define maxD7_Pin GPIO_PIN_7
-#define maxD7_GPIO_Port GPIOF
-#define maxD8_Pin GPIO_PIN_8
-#define maxD8_GPIO_Port GPIOF
-#define maxD9_Pin GPIO_PIN_9
-#define maxD9_GPIO_Port GPIOF
-#define maxD10_Pin GPIO_PIN_10
-#define maxD10_GPIO_Port GPIOF
 #define CTP_I2C_SCL_Pin GPIO_PIN_4
 #define CTP_I2C_SCL_GPIO_Port GPIOH
 #define CTP_I2C_SDA_Pin GPIO_PIN_5

@@ -80,15 +80,15 @@ extern "C" {
  * If not already enabled contact support for a new license.
  * Otherwise if intelliSENS based monitoring is not required you can set this to 0 which will improve the LCD performance.
  */
-#define ENABLE_INTELLISENS		(1)
+#define ENABLE_INTELLISENS		(0)
 /**
  * @brief Use this frequency when no control loop is enabled to get high bandwidth measurements. Max value is 100K.
  */
-#define MONITORING_FREQUENCY_Hz		(100000)
+#define MONITORING_FREQUENCY_Hz		(25000)
 /**
  * @brief Use this frequency when control loop is enabled to get low bandwidth measurements. Max value is 100K and is dependent upon the control performance.
  */
-#define CONTROL_FREQUENCY_Hz		(50000)
+#define CONTROL_FREQUENCY_Hz		(25000)
 /******** MEASUREMENT CONFIGURATION ***********/
 
 #ifdef __cplusplus

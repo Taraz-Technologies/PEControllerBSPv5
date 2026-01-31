@@ -59,6 +59,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+QSPI_HandleTypeDef hqspi;
+
 TIM_HandleTypeDef htim17;
 
 /* Definitions for storageTask */
@@ -96,6 +98,7 @@ volatile bool isDispInitialized = false;
 /* Private function prototypes -----------------------------------------------*/
 static void MX_GPIO_Init(void);
 static void MX_TIM17_Init(void);
+static void MX_QUADSPI_Init(void);
 void StartStorageTask(void *argument);
 void StartStatsTask(void *argument);
 void StartDisplayTask(void *argument);
@@ -171,6 +174,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM17_Init();
+  MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
 #if ENABLE_INTELLISENS
 	uint16_t* intelliSENSDataStore = (uint16_t*)RAW_ADC_DATA.dataRecord;
@@ -236,6 +240,41 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	}
   /* USER CODE END 3 */
+}
+
+/**
+  * @brief QUADSPI Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_QUADSPI_Init(void)
+{
+
+  /* USER CODE BEGIN QUADSPI_Init 0 */
+
+  /* USER CODE END QUADSPI_Init 0 */
+
+  /* USER CODE BEGIN QUADSPI_Init 1 */
+
+  /* USER CODE END QUADSPI_Init 1 */
+  /* QUADSPI parameter configuration*/
+  hqspi.Instance = QUADSPI;
+  hqspi.Init.ClockPrescaler = 255;
+  hqspi.Init.FifoThreshold = 1;
+  hqspi.Init.SampleShifting = QSPI_SAMPLE_SHIFTING_NONE;
+  hqspi.Init.FlashSize = 1;
+  hqspi.Init.ChipSelectHighTime = QSPI_CS_HIGH_TIME_1_CYCLE;
+  hqspi.Init.ClockMode = QSPI_CLOCK_MODE_0;
+  hqspi.Init.FlashID = QSPI_FLASH_ID_1;
+  hqspi.Init.DualFlash = QSPI_DUALFLASH_DISABLE;
+  if (HAL_QSPI_Init(&hqspi) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN QUADSPI_Init 2 */
+
+  /* USER CODE END QUADSPI_Init 2 */
+
 }
 
 /**
@@ -366,13 +405,11 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(maxRead_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : maxD0_Pin maxD1_Pin maxD2_Pin maxD3_Pin
-                           maxD4_Pin maxD5_Pin maxD6_Pin maxD7_Pin
-                           maxD8_Pin maxD9_Pin maxD10_Pin maxD11_Pin
-                           maxD12_Pin maxD13_Pin maxD14_Pin maxD15_Pin */
+                           maxD4_Pin maxD5_Pin maxD11_Pin maxD12_Pin
+                           maxD13_Pin maxD14_Pin maxD15_Pin */
   GPIO_InitStruct.Pin = maxD0_Pin|maxD1_Pin|maxD2_Pin|maxD3_Pin
-                          |maxD4_Pin|maxD5_Pin|maxD6_Pin|maxD7_Pin
-                          |maxD8_Pin|maxD9_Pin|maxD10_Pin|maxD11_Pin
-                          |maxD12_Pin|maxD13_Pin|maxD14_Pin|maxD15_Pin;
+                          |maxD4_Pin|maxD5_Pin|maxD11_Pin|maxD12_Pin
+                          |maxD13_Pin|maxD14_Pin|maxD15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);

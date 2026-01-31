@@ -101,7 +101,7 @@ void MainControl_Init(void)
 
 	MainControl_Run();
 
-#if IS_ADC_CORE
+#if 0//IS_ADC_CORE
 	adc_cont_config_t adcConfig = {
 			.callback = ADC_Callback,
 			.fs = MONITORING_FREQUENCY_Hz };
