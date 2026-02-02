@@ -1,10 +1,10 @@
 /**
  ********************************************************************************
- * @file 		pecontroller_display.h
+ * @file 		pecontroller_board_conf.h
  * @author 		Waqas Ehsan Butt
- * @date 		November 26, 2021
+ * @date 		Jan 08, 2026
  *
- * @brief    Header file for the PEController display module
+ * @brief    Header file for the PEController Board Configuration and Selection
  ********************************************************************************
  * @attention
  *
@@ -19,8 +19,8 @@
  ********************************************************************************
  */
 
-#ifndef PEONTROLLER_DISPLAY_H
-#define PEONTROLLER_DISPLAY_H
+#ifndef PEONTROLLER_BOARD_CONF_H
+#define PEONTROLLER_BOARD_CONF_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,61 +29,28 @@ extern "C" {
 /** @addtogroup BSP
  * @{
  */
-
-/** @defgroup Display Display
- * @brief This module defines the display
- * @{
- */
-
-/** @defgroup DisplayDriver Driver
- * @brief Contains the declaration and procedures for the display driver
- * @details List of functions
- * 	-# <b>@ref BSP_Display_Init()</b> Initializes the display module
- * @{
- */
 /********************************************************************************
  * Includes
  *******************************************************************************/
-#include "general_header.h"
-#include "screen_manager.h"
+
 /********************************************************************************
  * Defines
  *******************************************************************************/
 /** @defgroup PEDISPLAY_Exported_Typedefs Typedefs
   * @{
   */
-/**
- * @brief Pixel width of the Display
- */
-#define DISPLAY_WIDTH				(PECTRL_LCD_W)
-/**
- * @brief Pixel height of the Display
- */
-#define DISPLAY_HEIGHT				(PECTRL_LCD_H)
-/**
- * @brief Width of display used by the RAM
- */
-#define DISPLAY_WIDTH_RAM 			(DISPLAY_WIDTH)
-/**
- * @brief Height of display used by the RAM
- */
-#define DISPLAY_HEIGHT_RAM			(DISPLAY_HEIGHT)
-/**
- * @brief Set the display buffer size to 1/10th the size of the screen
- */
-#define LVGL_BUFF_SIZE				((DISPLAY_WIDTH_RAM * DISPLAY_HEIGHT_RAM * 10) / 100)
-/**
- * @brief LTDC layer used by LVGL
- */
-#define LVGL_LAYER					(0)
-/**
- * @brief LTDC layer used by direct display
- */
-#define DIRECT_LAYER				(1)
-/**
- * @brief Display format used by the lvgl layer in LTDC
- */
-#define RAM_PIXEL_FORMAT			(LTDC_PIXEL_FORMAT_L8)
+#define PECTRL_HW_REV            1   // or 2
+#define PECTRL_HAS_QSPI_RAM      (PECTRL_HW_REV >= 2)
+
+#define PECTRL_LCD_W             800
+#define PECTRL_LCD_H             480
+#define PECTRL_FB_BPP            16  // RGB565
+
+#define PECTRL_EXT_RAM_BYTES     (1024*1024)  // v2 with IS66WVS1M8 = 1MB
+#define PECTRL_FB_BYTES          (PECTRL_LCD_W*PECTRL_LCD_H*(PECTRL_FB_BPP/8))
+
+#define PECTRL_USE_DOUBLE_FB     (PECTRL_HAS_QSPI_RAM && (PECTRL_EXT_RAM_BYTES >= (2*PECTRL_FB_BYTES)))
+#define PECTRL_USE_DMA2D         1
 /**
   * @}
   */
@@ -98,45 +65,19 @@ extern "C" {
 /********************************************************************************
  * Exported Variables
  *******************************************************************************/
-/** @defgroup PEDISPLAY_Exported_Variables Variables
-  * @{
-  */
-/**
- * @brief Frame buffer used for storage of a display frame in RAM.
- */
-extern uint8_t frame_buff[DISPLAY_HEIGHT_RAM][DISPLAY_WIDTH_RAM];
-/**
- * @}
- */
+
 /********************************************************************************
  * Global Function Prototypes
  *******************************************************************************/
-/** @defgroup PEDISPLAY_Exported_Functions Functions
-  * @{
-  */
-/**
- * @brief Initializes the display module
- */
-extern void BSP_Display_Init(void);
+
 /********************************************************************************
  * Code
  *******************************************************************************/
 
-
-
-/**
- * @}
- */
 #ifdef __cplusplus
 }
 #endif
 
-/**
- * @}
- */
-/**
- * @}
- */
 /**
  * @}
  */

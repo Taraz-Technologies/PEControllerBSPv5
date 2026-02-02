@@ -80,6 +80,14 @@ static void ProcessInverterActivation(state_update_request* request, int regID, 
 
 static void ADC_Callback(adc_measures_t* result)
 {
+	static bool directEnable = true;
+	if (directEnable)
+	{
+		inv1StateUpdateRequest.isPending = inv2StateUpdateRequest.isPending = true;
+		inv1StateUpdateRequest.state = inv2StateUpdateRequest.state = true;
+		directEnable = false;
+	}
+
 	ProcessInverterActivation(&inv1StateUpdateRequest, P2P_INV1_STATE, &openLoopVfConfig1);
 	ProcessInverterActivation(&inv2StateUpdateRequest, P2P_INV2_STATE,
 #if VFD_COUNT == 2
@@ -119,6 +127,17 @@ static void ADC_Callback(adc_measures_t* result)
 	MainControl_Loop(result);
 }
 #endif
+
+/*
+static void PWMCallback(void)
+{
+	ProcessInverterActivation(&inv1StateUpdateRequest, P2P_INV1_STATE, &openLoopVfConfig1);
+	ProcessInverterActivation(&inv2StateUpdateRequest, P2P_INV2_STATE, &openLoopVfConfig2);
+
+	MainControl_Loop(NULL);
+}
+*/
+
 /**
  * @brief Initialize the main control loop
  */
@@ -132,7 +151,7 @@ void MainControl_Init(void)
 	BSP_Dout_SetPortAsGPIO();
 	BSP_Dout_SetPortValue(0);
 
-	HAL_Delay(1000);
+	HAL_Delay(10);
 
 	openLoopVfConfig1.inverterConfig.s1PinNos[0] = VFD1_PIN1;
 	openLoopVfConfig1.inverterConfig.s1PinNos[1] = openLoopVfConfig1.inverterConfig.s1PinNos[0] + LEG_SWITCH_COUNT;

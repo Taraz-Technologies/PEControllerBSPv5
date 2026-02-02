@@ -94,6 +94,39 @@ static void ReadTouchPad(struct _lv_indev_drv_t * indev, lv_indev_data_t * data)
 	}
 }
 
+#if PECTRL_USE_DMA2D
+	//extern DMA2D_HandleTypeDef hdma2d;
+	DMA2D_HandleTypeDef hdma2d;
+	static lv_disp_drv_t * s_pending_disp = NULL;
+
+	static void DMA2D_XferCplt(DMA2D_HandleTypeDef *h)
+	{
+		(void)h;
+		if(s_pending_disp) {
+			lv_disp_flush_ready(s_pending_disp);
+			s_pending_disp = NULL;
+		}
+	}
+
+	static void PE_DMA2D_Copy565_InitOnce(void)
+	{
+		static int inited = 0;
+		if(inited) return;
+		inited = 1;
+
+		hdma2d.Init.Mode      = DMA2D_M2M;
+		hdma2d.Init.ColorMode = DMA2D_OUTPUT_RGB565;
+		hdma2d.Init.OutputOffset = 0; // set per transfer
+		(void)HAL_DMA2D_Init(&hdma2d);
+
+		hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputColorMode = DMA2D_INPUT_RGB565;
+		hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputOffset    = 0;
+		(void)HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_FOREGROUND_LAYER);
+
+		hdma2d.XferCpltCallback = DMA2D_XferCplt;
+	}
+#endif
+
 static void FlushLVGLScreen(lv_disp_drv_t * disp, const lv_area_t * area, lv_color_t * color_p)
 {
 	int32_t x, y;
@@ -124,6 +157,8 @@ static void ConfigClock(void)
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 	__HAL_RCC_GPIOK_CLK_ENABLE();
 	__HAL_RCC_GPIOG_CLK_ENABLE();
+
+	__HAL_RCC_DMA2D_CLK_ENABLE();
 }
 
 /**
@@ -308,6 +343,9 @@ void BSP_Display_Init(void)
 	ConfigIO();
 	ConfigLVGL();
 	ConfigLTDC();
+#if PECTRL_USE_DMA2D
+	PE_DMA2D_Copy565_InitOnce();
+#endif
 	ScreenManager_Init(LayerDisplay, (adc_info_t*)&ADC_INFO);
 }
 
@@ -318,6 +356,7 @@ static void BSP_Display_DeInit(void)
 {
 	// Disable clocks
 	__HAL_RCC_LTDC_CLK_DISABLE();
+	__HAL_RCC_DMA2D_CLK_DISABLE();
 
 	// Disable IOs
 	HAL_GPIO_DeInit(GPIOE, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_13
